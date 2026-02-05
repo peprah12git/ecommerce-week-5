@@ -86,6 +86,9 @@ public class UserDAO implements UserDaoInterface {
             System.err.println("Error fetching user by email: " + e.getMessage());
         }
         return null;
+        // create a notification manager, it going to be a notification manger concrete class,  dependency which i s an interfacenotification service is an interface, email notification(sending email) service & sms notification(sending sms). both implement notifcation
+        // in the notification service one single abstract class called send. in the notification manager , we will have one method called sendNotification, in this send we are going to call the call send method of the notifcation service injected.
+
     }
 @Override
     public boolean updateUser(User user) {

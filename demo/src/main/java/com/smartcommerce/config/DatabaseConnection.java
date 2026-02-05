@@ -1,6 +1,5 @@
 package com.smartcommerce.config;
 
-//import graphql.relay.Connection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,6 +11,7 @@ public class DatabaseConnection {
 
     private static DatabaseConnection instance;
     private Connection connection;
+
     private DatabaseConnection() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -22,6 +22,7 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
     }
+
     public static DatabaseConnection getInstance() {
         if (instance == null || !isConnectionValid()) {
             instance = new DatabaseConnection();
@@ -38,15 +39,17 @@ public class DatabaseConnection {
         }
     }
 
-    public static java.sql.Connection getConnection() {
+    // FIXED: Now properly references the instance's connection
+    public static Connection getConnection() {
+        DatabaseConnection dbInstance = getInstance();
         try {
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            if (dbInstance.connection == null || dbInstance.connection.isClosed()) {
+                dbInstance.connection = DriverManager.getConnection(URL, USER, PASSWORD);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return connection;
+        return dbInstance.connection;
     }
 
     public void closeConnection() {

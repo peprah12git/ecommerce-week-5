@@ -1,19 +1,21 @@
 package com.smartcommerce.dao.implementation;
 
-import com.config.DatabaseConnection;
-import com.models.Review;
+import com.smartcommerce.config.DatabaseConnection;
+import com.smartcommerce.dao.interfaces.ReviewDaoInterface;
+import com.smartcommerce.model.Review;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReviewDAO {
+public class ReviewDAO implements ReviewDaoInterface {
     private Connection connection;
 
     public ReviewDAO() {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
 
+    @Override
     public boolean addReview(Review review) {
         String sql = "INSERT INTO Reviews (user_id, product_id, rating, comment) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -35,7 +37,7 @@ public class ReviewDAO {
         }
         return false;
     }
-
+@Override
     public List<Review> getReviewsByProductId(int productId) {
         List<Review> reviews = new ArrayList<>();
         String sql = "SELECT r.*, u.name as user_name, p.name as product_name " +
@@ -56,6 +58,7 @@ public class ReviewDAO {
         return reviews;
     }
 
+    @Override
     public List<Review> getAllReviews() {
         List<Review> reviews = new ArrayList<>();
         String sql = "SELECT r.*, u.name as user_name, p.name as product_name " +
@@ -74,7 +77,7 @@ public class ReviewDAO {
         }
         return reviews;
     }
-
+@Override
     public boolean deleteReview(int id) {
         String sql = "DELETE FROM Reviews WHERE review_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -85,7 +88,7 @@ public class ReviewDAO {
         }
         return false;
     }
-
+@Override
     public double getAverageRating(int productId) {
         String sql = "SELECT AVG(rating) as avg_rating FROM Reviews WHERE product_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

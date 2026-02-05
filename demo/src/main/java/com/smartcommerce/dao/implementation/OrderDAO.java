@@ -1,19 +1,20 @@
 package com.smartcommerce.dao.implementation;
 
-import com.config.DatabaseConnection;
-import com.models.Order;
+import com.smartcommerce.config.DatabaseConnection;
+import com.smartcommerce.dao.interfaces.OrderDaoInterface;
+import com.smartcommerce.model.Order;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderDAO {
+public class OrderDAO  implements OrderDaoInterface {
     private Connection connection;
 
     public OrderDAO() {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
-
+@Override
     public boolean addOrder(Order order) {
         String sql = "INSERT INTO Orders (user_id, status, total_amount) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -34,7 +35,7 @@ public class OrderDAO {
         }
         return false;
     }
-
+@Override
     public List<Order> getAllOrders() {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT o.*, u.name as user_name FROM Orders o " +
@@ -51,7 +52,7 @@ public class OrderDAO {
         }
         return orders;
     }
-
+@Override
     public Order getOrderById(int id) {
         String sql = "SELECT o.*, u.name as user_name FROM Orders o " +
                 "LEFT JOIN Users u ON o.user_id = u.user_id " +
@@ -67,7 +68,7 @@ public class OrderDAO {
         }
         return null;
     }
-
+@Override
     public List<Order> getOrdersByUserId(int userId) {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT o.*, u.name as user_name FROM Orders o " +
@@ -85,7 +86,7 @@ public class OrderDAO {
         }
         return orders;
     }
-
+@Override
     public boolean updateOrderStatus(int orderId, String status) {
         String sql = "UPDATE Orders SET status = ? WHERE order_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -97,7 +98,7 @@ public class OrderDAO {
         }
         return false;
     }
-
+@Override
     public boolean deleteOrder(int id) {
         String sql = "DELETE FROM Orders WHERE order_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

@@ -1,7 +1,7 @@
 package com.smartcommerce.dao.implementation;
 
-import com.config.DatabaseConnection;
-import com.models.User;
+import com.smartcommerce.config.DatabaseConnection;
+import com.smartcommerce.model.User;
 import com.smartcommerce.dao.interfaces.UserDaoInterface;
 
 import java.sql.*;
@@ -14,7 +14,7 @@ public class UserDAO implements UserDaoInterface {
     public UserDAO() {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
-
+@Override
     public boolean addUser(User user) {
         String sql = "INSERT INTO Users (name, email, password, phone, address, role) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -38,7 +38,7 @@ public class UserDAO implements UserDaoInterface {
         }
         return false;
     }
-
+@Override
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM Users ORDER BY user_id";
@@ -53,7 +53,7 @@ public class UserDAO implements UserDaoInterface {
         }
         return users;
     }
-
+@Override
     public User getUserById(int id) {
         String sql = "SELECT * FROM Users WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -73,6 +73,7 @@ public class UserDAO implements UserDaoInterface {
      this is done by prepared statement to prevent SQL injection attacks.
 
     */
+    @Override
     public User getUserByEmail(String email) {
         String sql = "SELECT * FROM Users WHERE email = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -86,7 +87,7 @@ public class UserDAO implements UserDaoInterface {
         }
         return null;
     }
-
+@Override
     public boolean updateUser(User user) {
         String sql = "UPDATE Users SET name = ?, email = ?, phone = ?, address = ?, role = ? WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -102,7 +103,7 @@ public class UserDAO implements UserDaoInterface {
         }
         return false;
     }
-
+@Override
     public boolean deleteUser(int id) {
         String sql = "DELETE FROM Users WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

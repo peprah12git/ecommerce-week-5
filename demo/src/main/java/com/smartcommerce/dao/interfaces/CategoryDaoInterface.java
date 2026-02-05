@@ -1,6 +1,7 @@
 package com.smartcommerce.dao.interfaces;
 
-import com.models.Category;
+import com.smartcommerce.model.Category;
+
 import java.util.List;
 
 /**

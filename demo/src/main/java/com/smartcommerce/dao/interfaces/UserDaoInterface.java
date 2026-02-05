@@ -1,6 +1,7 @@
 package com.smartcommerce.dao.interfaces;
 
-import com.model.User;
+import com.smartcommerce.model.User;
+
 import java.util.List;
 
 public interface UserDaoInterface {

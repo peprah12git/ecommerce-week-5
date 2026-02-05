@@ -1,13 +1,14 @@
 package com.smartcommerce.dao.implementation;
 
-import com.config.DatabaseConnection;
-import com.models.Inventory;
+import com.smartcommerce.config.DatabaseConnection;
+import com.smartcommerce.dao.interfaces.InventoryDaoInterface;
+import com.smartcommerce.model.Inventory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public  class InventoryDAO {
+public  class InventoryDAO implements InventoryDaoInterface {
     private Connection connection;
 
     public InventoryDAO() {

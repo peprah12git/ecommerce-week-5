@@ -1,8 +1,9 @@
 package com.smartcommerce.dao.implementation;
 
-import com.config.DatabaseConnection;
-import com.models.Product;
-import com.util.PerformanceMonitor;
+import com.smartcommerce.config.DatabaseConnection;
+import com.smartcommerce.dao.interfaces.ProductDaoInterface;
+import com.smartcommerce.model.Product;
+//import com.smartcommerce.util.PerformanceMonitor;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,11 +13,11 @@ import java.util.List;
  * Data Access Object for Products with in-memory caching
  * All logging is silent - no UI exposure
  */
-public class ProductDAO {
+public class ProductDAO implements ProductDaoInterface {
     private static final ProductDAO instance = new ProductDAO();
     private Connection connection;
-    private final PerformanceMonitor monitor = PerformanceMonitor.getInstance();
-    
+    //private final PerformanceMonitor monitor = PerformanceMonitor.getInstance();
+
     private static List<Product> productCache = null;
     private static long cacheTimestamp = 0;
     private static final long CACHE_TTL_MS = 300000;
@@ -26,31 +27,31 @@ public class ProductDAO {
     private ProductDAO() {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
-    
+
     public static ProductDAO getInstance() {
         return instance;
     }
-    
+
     private boolean isCacheValid() {
-        return productCache != null && 
+        return productCache != null &&
                (System.currentTimeMillis() - cacheTimestamp) < CACHE_TTL_MS;
     }
-    
+
     public void invalidateCache() {
         productCache = null;
         cacheTimestamp = 0;
     }
-    
+
     public static String getCacheStats() {
         int total = cacheHits + cacheMisses;
         double hitRate = total > 0 ? (cacheHits * 100.0 / total) : 0;
-        return String.format("[CACHE] Hits: %d, Misses: %d, Hit Rate: %.1f%%", 
+        return String.format("[CACHE] Hits: %d, Misses: %d, Hit Rate: %.1f%%",
                              cacheHits, cacheMisses, hitRate);
     }
-
+@Override
     public List<Product> getProductsByCategory(String category) {
-        long startTime = monitor.startTimer();
-        
+       // long startTime = monitor.startTimer();
+
         List<Product> products = new ArrayList<>();
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
@@ -67,11 +68,11 @@ public class ProductDAO {
         } catch (SQLException e) {
             // Silent
         }
-        
+
         monitor.recordQueryTime("getProductsByCategory", startTime);
         return products;
     }
-
+@Override
     public boolean addProduct(Product product) {
         String sql = "INSERT INTO Products (name, description, price, category_id) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -95,7 +96,7 @@ public class ProductDAO {
         }
         return false;
     }
-
+@Override
     private void createInventoryEntry(int productId) {
         String sql = "INSERT INTO Inventory (product_id, quantity_available) VALUES (?, 0)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -105,18 +106,18 @@ public class ProductDAO {
             // Silent
         }
     }
-
+@Override
     public List<Product> getAllProducts() {
         long perfStartTime = monitor.startTimer();
-        
+
         if (isCacheValid()) {
             cacheHits++;
             monitor.recordQueryTime("getAllProducts", perfStartTime);
             return new ArrayList<>(productCache);
         }
-        
+
         cacheMisses++;
-        
+
         List<Product> products = new ArrayList<>();
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
@@ -125,7 +126,7 @@ public class ProductDAO {
                 "ORDER BY p.product_id DESC";
 
         this.connection = DatabaseConnection.getInstance().getConnection();
-        
+
         if (connection == null) {
             return products;
         }
@@ -135,23 +136,23 @@ public class ProductDAO {
             while (rs.next()) {
                 products.add(extractProduct(rs));
             }
-            
+
             productCache = new ArrayList<>(products);
             cacheTimestamp = System.currentTimeMillis();
-                             
+
         } catch (SQLException e) {
             // Silent
         }
-        
+
         monitor.recordQueryTime("getAllProducts", perfStartTime);
         return products;
     }
-
+@Override
     public Product getProductById(int id) {
         long startTime = monitor.startTimer();
-        
+
         this.connection = DatabaseConnection.getInstance().getConnection();
-        
+
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
                 "LEFT JOIN Categories c ON p.category_id = c.category_id " +
@@ -169,11 +170,11 @@ public class ProductDAO {
         } catch (SQLException e) {
             // Silent
         }
-        
+
         monitor.recordQueryTime("getProductById", startTime);
         return null;
     }
-
+@Override
     public boolean updateProduct(Product product) {
         String sql = "UPDATE Products SET name = ?, description = ?, price = ?, category_id = ? WHERE product_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -192,7 +193,7 @@ public class ProductDAO {
         }
         return false;
     }
-
+@Override
     public boolean deleteProduct(int id) {
         String sql = "DELETE FROM Products WHERE product_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -210,9 +211,9 @@ public class ProductDAO {
 
     public List<Product> searchProducts(String term) {
         long startTime = monitor.startTimer();
-        
+
         this.connection = DatabaseConnection.getInstance().getConnection();
-        
+
         List<Product> products = new ArrayList<>();
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
@@ -231,7 +232,7 @@ public class ProductDAO {
         } catch (SQLException e) {
             // Silent
         }
-        
+
         monitor.recordQueryTime("searchProducts", startTime);
         return products;
     }

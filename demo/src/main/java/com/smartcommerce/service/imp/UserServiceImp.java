@@ -1,8 +1,220 @@
 package com.smartcommerce.service.imp;
 
 import com.smartcommerce.service.serviceInterface.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.smartcommerce.dao.interfaces.UserDaoInterface;
+import com.smartcommerce.exception.BusinessException;
+import com.smartcommerce.exception.DuplicateResourceException;
+import com.smartcommerce.exception.ResourceNotFoundException;
+import com.smartcommerce.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+/**
+ * Service layer for User entity
+ * Handles business logic, validation, and orchestration of user operations
+ */
 @Service
-public class UserServiceImp implements UserService {
+@Transactional
+@AllArgsConstructor
+public class UserServiceImp  {
+
+    private  UserDaoInterface userDao;
+
+    /**
+     * Creates a new user
+     * @param user User object to create
+     * @return Created user
+     * @throws DuplicateResourceException if email already exists
+     * @throws BusinessException if user creation fails
+     */
+    public User createUser(User user) {
+        // Validate input
+        validateUser(user);
+
+        // Check for duplicate email
+        User existingUser = userDao.getUserByEmail(user.getEmail());
+        if (existingUser != null) {
+            throw new DuplicateResourceException("User", "email", user.getEmail());
+        }
+
+        // Set default role if not provided
+        if (user.getRole() == null || user.getRole().trim().isEmpty()) {
+            user.setRole("CUSTOMER");
+        }
+
+        // Add user
+        boolean success = userDao.addUser(user);
+        if (!success) {
+            throw new BusinessException("Failed to create user");
+        }
+
+        // Retrieve and return the created user
+        User createdUser = userDao.getUserByEmail(user.getEmail());
+        if (createdUser == null) {
+            throw new BusinessException("User created but could not be retrieved");
+        }
+
+        return createdUser;
+    }
+
+    /**
+     * Retrieves all users
+     * @return List of all users
+     */
+    @Transactional(readOnly = true)
+    public List<User> getAllUsers() {
+        return userDao.getAllUsers();
+    }
+
+    /**
+     * Retrieves a user by ID
+     * @param userId User ID
+     * @return User object
+     * @throws ResourceNotFoundException if user not found
+     */
+    @Transactional(readOnly = true)
+    public User getUserById(int userId) {
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User", "id", userId);
+        }
+        return user;
+    }
+
+    /**
+     * Retrieves a user by email
+     * @param email Email address
+     * @return User object
+     * @throws ResourceNotFoundException if user not found
+     */
+    @Transactional(readOnly = true)
+    public User getUserByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new BusinessException("Email cannot be empty");
+        }
+
+        User user = userDao.getUserByEmail(email);
+        if (user == null) {
+            throw new ResourceNotFoundException("User", "email", email);
+        }
+        return user;
+    }
+
+    /**
+     * Updates an existing user
+     * @param userId User ID to update
+     * @param userDetails Updated user details
+     * @return Updated user
+     * @throws ResourceNotFoundException if user not found
+     * @throws DuplicateResourceException if email already exists for another user
+     * @throws BusinessException if update fails
+     */
+    public User updateUser(int userId, User userDetails) {
+        // Check if user exists
+        User existingUser = userDao.getUserById(userId);
+        if (existingUser == null) {
+            throw new ResourceNotFoundException("User", "id", userId);
+        }
+
+        // Validate updated details
+        validateUser(userDetails);
+
+        // Check for duplicate email (if email is being changed)
+        if (!existingUser.getEmail().equals(userDetails.getEmail())) {
+            User userWithEmail = userDao.getUserByEmail(userDetails.getEmail());
+            if (userWithEmail != null && userWithEmail.getUserId() != userId) {
+                throw new DuplicateResourceException("User", "email", userDetails.getEmail());
+            }
+        }
+
+        // Update user details
+        existingUser.setName(userDetails.getName());
+        existingUser.setEmail(userDetails.getEmail());
+        existingUser.setPhone(userDetails.getPhone());
+        existingUser.setAddress(userDetails.getAddress());
+
+        // Update password only if provided
+        if (userDetails.getPassword() != null && !userDetails.getPassword().trim().isEmpty()) {
+            existingUser.setPassword(userDetails.getPassword());
+        }
+
+        // Update role only if provided
+        if (userDetails.getRole() != null && !userDetails.getRole().trim().isEmpty()) {
+            existingUser.setRole(userDetails.getRole());
+        }
+
+        // Perform update
+        boolean success = userDao.updateUser(existingUser);
+        if (!success) {
+            throw new BusinessException("Failed to update user");
+        }
+
+        return getUserById(userId);
+    }
+
+    /**
+     * Deletes a user
+     * @param userId User ID to delete
+     * @throws ResourceNotFoundException if user not found
+     * @throws BusinessException if deletion fails
+     */
+    public void deleteUser(int userId) {
+        // Check if user exists
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User", "id", userId);
+        }
+
+        // Perform deletion
+        boolean success = userDao.deleteUser(userId);
+        if (!success) {
+            throw new BusinessException("Failed to delete user");
+        }
+    }
+
+    /**
+     * Validates user data
+     * @param user User to validate
+     * @throws BusinessException if validation fails
+     */
+    private void validateUser(User user) {
+        if (user == null) {
+            throw new BusinessException("User cannot be null");
+        }
+
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            throw new BusinessException("User name is required");
+        }
+
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            throw new BusinessException("User email is required");
+        }
+
+        if (!isValidEmail(user.getEmail())) {
+            throw new BusinessException("Invalid email format");
+        }
+
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            throw new BusinessException("User password is required");
+        }
+
+        if (user.getPassword().length() < 6) {
+            throw new BusinessException("Password must be at least 6 characters long");
+        }
+    }
+
+    /**
+     * Simple email validation
+     * @param email Email to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email.matches(emailRegex);
+    }
 }

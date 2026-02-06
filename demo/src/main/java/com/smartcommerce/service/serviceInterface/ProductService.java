@@ -1,16 +1,17 @@
 package com.smartcommerce.service.serviceInterface;
 
+import java.util.List;
+
+import com.smartcommerce.dtos.request.ProductFilterDTO;
 import com.smartcommerce.exception.BusinessException;
 import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.Product;
-
-import java.util.List;
 
 /**
  * Service interface for Product entity
  * Defines business operations related to products
  */
-public interface ProductServiceInterface {
+public interface ProductService {
 
     /**
      * Creates a new product
@@ -28,6 +29,32 @@ public interface ProductServiceInterface {
      * @return List of all products
      */
     List<Product> getAllProducts();
+
+    /**
+     * Retrieves products with pagination, sorting, and filtering
+     *
+     * @param pageNumber   Page number (0-indexed)
+     * @param pageSize     Number of items per page
+     * @param sortBy       Field to sort by (productName, price, createdAt, etc.)
+     * @param sortDirection Sort direction (ASC or DESC)
+     * @param filters      Filter criteria
+     * @return Paginated and filtered list of products
+     */
+    List<Product> getProductsWithPaginationAndFilters(
+            int pageNumber,
+            int pageSize,
+            String sortBy,
+            String sortDirection,
+            ProductFilterDTO filters
+    );
+
+    /**
+     * Counts total products matching the filter criteria
+     *
+     * @param filters Filter criteria
+     * @return Total count of matching products
+     */
+    long countProductsWithFilters(ProductFilterDTO filters);
 
     /**
      * Retrieves a product by ID

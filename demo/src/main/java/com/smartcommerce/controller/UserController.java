@@ -24,7 +24,23 @@ public class UserController {
     public ResponseEntity<UserResponse> addUser(
             @Valid @RequestBody CreateUserDTO createUserDTO
     ) {
-        User response = userService.createUser(createUserDTO);
+        User userToCreate = new User(
+                createUserDTO.name(),
+                createUserDTO.email(),
+                createUserDTO.password(),
+                createUserDTO.phone(),
+                createUserDTO.address()
+        );
+        User user = userService.createUser(userToCreate);
+        UserResponse response = new UserResponse(
+                user.getUserId(),
+                user.getName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getAddress(),
+                user.getRole(),
+                user.getCreatedAt()
+        );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

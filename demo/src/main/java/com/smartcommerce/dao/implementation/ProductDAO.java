@@ -50,8 +50,6 @@ public class ProductDAO implements ProductDaoInterface {
 
     @Override
     public List<Product> getProductsByCategory(String category) {
-        // long startTime = monitor.startTimer();
-
         List<Product> products = new ArrayList<>();
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
@@ -69,7 +67,6 @@ public class ProductDAO implements ProductDaoInterface {
             // Silent
         }
 
-        monitor.recordQueryTime("getProductsByCategory", startTime);
         return products;
     }
 
@@ -98,7 +95,6 @@ public class ProductDAO implements ProductDaoInterface {
         return false;
     }
 
-    @Override
     private void createInventoryEntry(int productId) {
         String sql = "INSERT INTO Inventory (product_id, quantity_available) VALUES (?, 0)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -111,11 +107,8 @@ public class ProductDAO implements ProductDaoInterface {
 
     @Override
     public List<Product> getAllProducts() {
-        long perfStartTime = monitor.startTimer();
-
         if (isCacheValid()) {
             cacheHits++;
-            monitor.recordQueryTime("getAllProducts", perfStartTime);
             return new ArrayList<>(productCache);
         }
 
@@ -147,14 +140,11 @@ public class ProductDAO implements ProductDaoInterface {
             // Silent
         }
 
-        monitor.recordQueryTime("getAllProducts", perfStartTime);
         return products;
     }
 
     @Override
     public Product getProductById(int id) {
-        long startTime = monitor.startTimer();
-
         this.connection = DatabaseConnection.getInstance().getConnection();
 
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
@@ -167,15 +157,12 @@ public class ProductDAO implements ProductDaoInterface {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                Product product = extractProduct(rs);
-                monitor.recordQueryTime("getProductById", startTime);
-                return product;
+                return extractProduct(rs);
             }
         } catch (SQLException e) {
             // Silent
         }
 
-        monitor.recordQueryTime("getProductById", startTime);
         return null;
     }
 
@@ -216,8 +203,6 @@ public class ProductDAO implements ProductDaoInterface {
     }
 
     public List<Product> searchProducts(String term) {
-        long startTime = monitor.startTimer();
-
         this.connection = DatabaseConnection.getInstance().getConnection();
 
         List<Product> products = new ArrayList<>();
@@ -239,7 +224,6 @@ public class ProductDAO implements ProductDaoInterface {
             // Silent
         }
 
-        monitor.recordQueryTime("searchProducts", startTime);
         return products;
     }
 

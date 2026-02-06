@@ -4,6 +4,7 @@ package com.smartcommerce.dao.implementation;
 import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
 import com.smartcommerce.model.Category;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 /**
  * Data Access Object for Category operations
  */
+@Repository
 public class CategoryDAO implements CategoryDaoInterface {
     private Connection connection;
 

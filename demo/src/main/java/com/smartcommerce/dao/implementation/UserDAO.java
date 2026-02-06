@@ -3,11 +3,13 @@ package com.smartcommerce.dao.implementation;
 import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.model.User;
 import com.smartcommerce.dao.interfaces.UserDaoInterface;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class UserDAO implements UserDaoInterface {
     private Connection connection;
 

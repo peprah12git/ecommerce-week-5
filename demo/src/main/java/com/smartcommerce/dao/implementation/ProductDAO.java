@@ -3,6 +3,7 @@ package com.smartcommerce.dao.implementation;
 import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.model.Product;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,10 +13,9 @@ import java.util.List;
  * Data Access Object for Products with in-memory caching
  * All logging is silent - no UI exposure
  */
+@Repository
 public class ProductDAO implements ProductDaoInterface {
-    private static final ProductDAO instance = new ProductDAO();
     private Connection connection;
-    //private final PerformanceMonitor monitor = PerformanceMonitor.getInstance();
 
     private static List<Product> productCache = null;
     private static long cacheTimestamp = 0;
@@ -23,12 +23,8 @@ public class ProductDAO implements ProductDaoInterface {
     private static int cacheHits = 0;
     private static int cacheMisses = 0;
 
-    private ProductDAO() {
+    public ProductDAO() {
         this.connection = DatabaseConnection.getInstance().getConnection();
-    }
-
-    public static ProductDAO getInstance() {
-        return instance;
     }
 
     private boolean isCacheValid() {

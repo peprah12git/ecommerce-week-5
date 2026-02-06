@@ -1,24 +1,25 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.config.DatabaseConnection;
-import com.smartcommerce.dao.interfaces.OrderDaoInterface;
 import com.smartcommerce.dao.interfaces.OrderItemDaoInterface;
 import com.smartcommerce.model.OrderItem;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderItemDAO implements OrderItemDaoInterface {
-    private Connection connection;
+    private DataSource dataSource;
 
-    public OrderItemDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+    public OrderItemDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
-@Override
+
+    @Override
     public boolean addOrderItem(OrderItem item) {
         String sql = "INSERT INTO OrderItems (order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, item.getOrderId());
             pstmt.setInt(2, item.getProductId());
             pstmt.setInt(3, item.getQuantity());
@@ -37,10 +38,12 @@ public class OrderItemDAO implements OrderItemDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public boolean addOrderItem(int orderId, int productId, int quantity, java.math.BigDecimal unitPrice) {
         String sql = "INSERT INTO OrderItems (order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, orderId);
             pstmt.setInt(2, productId);
             pstmt.setInt(3, quantity);
@@ -51,14 +54,16 @@ public class OrderItemDAO implements OrderItemDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public List<OrderItem> getOrderItemsByOrderId(int orderId) {
         List<OrderItem> items = new ArrayList<>();
         String sql = "SELECT oi.*, p.name as product_name FROM OrderItems oi " +
                 "LEFT JOIN Products p ON oi.product_id = p.product_id " +
                 "WHERE oi.order_id = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, orderId);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
@@ -69,10 +74,12 @@ public class OrderItemDAO implements OrderItemDaoInterface {
         }
         return items;
     }
-@Override
+
+    @Override
     public boolean deleteOrderItem(int id) {
         String sql = "DELETE FROM OrderItems WHERE order_item_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {

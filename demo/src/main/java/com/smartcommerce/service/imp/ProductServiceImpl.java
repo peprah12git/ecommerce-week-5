@@ -1,5 +1,13 @@
 package com.smartcommerce.service.imp;
 
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.dtos.request.ProductFilterDTO;
@@ -8,14 +16,6 @@ import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.Category;
 import com.smartcommerce.model.Product;
 import com.smartcommerce.service.serviceInterface.ProductService;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service implementation for Product entity
@@ -23,11 +23,16 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional
-@AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductDaoInterface productDao;
     private final CategoryDaoInterface categoryDao;
+
+    // Manual constructor for compatibility
+    public ProductServiceImpl(ProductDaoInterface productDao, CategoryDaoInterface categoryDao) {
+        this.productDao = productDao;
+        this.categoryDao = categoryDao;
+    }
 
     @Override
     public Product createProduct(Product product) {

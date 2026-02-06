@@ -1,23 +1,26 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.dao.interfaces.InventoryDaoInterface;
 import com.smartcommerce.model.Inventory;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public  class InventoryDAO implements InventoryDaoInterface {
-    private Connection connection;
+public class InventoryDAO implements InventoryDaoInterface {
+    private DataSource dataSource;
 
-    public InventoryDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+    // Constructor should accept DataSource as dependency injection
+    public InventoryDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
+
     @Override
     public boolean updateInventory(int productId, int quantity) {
         String sql = "UPDATE Inventory SET quantity_available = ? WHERE product_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, quantity);
             pstmt.setInt(2, productId);
             return pstmt.executeUpdate() > 0;
@@ -26,12 +29,14 @@ public  class InventoryDAO implements InventoryDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public Inventory getInventoryByProductId(int productId) {
         String sql = "SELECT i.*, p.name as product_name FROM Inventory i " +
                 "LEFT JOIN Products p ON i.product_id = p.product_id " +
                 "WHERE i.product_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, productId);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -42,6 +47,7 @@ public  class InventoryDAO implements InventoryDaoInterface {
         }
         return null;
     }
+
     @Override
     public List<Inventory> getAllInventory() {
         List<Inventory> inventories = new ArrayList<>();
@@ -49,7 +55,8 @@ public  class InventoryDAO implements InventoryDaoInterface {
                 "LEFT JOIN Products p ON i.product_id = p.product_id " +
                 "ORDER BY i.quantity_available ASC";
 
-        try (Statement stmt = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 inventories.add(extractInventory(rs));
@@ -59,6 +66,7 @@ public  class InventoryDAO implements InventoryDaoInterface {
         }
         return inventories;
     }
+
     @Override
     public List<Inventory> getLowStockItems(int threshold) {
         List<Inventory> items = new ArrayList<>();
@@ -67,7 +75,8 @@ public  class InventoryDAO implements InventoryDaoInterface {
                 "WHERE i.quantity_available < ? " +
                 "ORDER BY i.quantity_available ASC";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, threshold);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
@@ -78,6 +87,7 @@ public  class InventoryDAO implements InventoryDaoInterface {
         }
         return items;
     }
+
     private Inventory extractInventory(ResultSet rs) throws SQLException {
         Inventory inv = new Inventory();
         inv.setInventoryId(rs.getInt("inventory_id"));

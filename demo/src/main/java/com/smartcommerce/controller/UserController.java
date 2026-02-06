@@ -1,11 +1,5 @@
 package com.smartcommerce.controller;
 
-import com.smartcommerce.dtos.request.CreateUserDTO;
-import com.smartcommerce.dtos.response.UserResponse;
-import com.smartcommerce.model.User;
-import com.smartcommerce.service.serviceInterface.UserService;
-import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,13 +7,43 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@AllArgsConstructor
+import com.smartcommerce.dtos.request.CreateUserDTO;
+import com.smartcommerce.dtos.response.UserResponse;
+import com.smartcommerce.exception.ErrorResponse;
+import com.smartcommerce.exception.ValidationErrorResponse;
+import com.smartcommerce.model.User;
+import com.smartcommerce.service.serviceInterface.UserService;
+import com.smartcommerce.utils.UserMapper;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "Users", description = "User management API — registration and account operations")
 public class UserController {
 
     private final UserService userService;
 
+    // Manual constructor for compatibility
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Operation(summary = "Register a new user", description = "Creates a new user account with the provided details")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "User registered successfully",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Email already exists",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping
     public ResponseEntity<UserResponse> addUser(
             @Valid @RequestBody CreateUserDTO createUserDTO
@@ -32,15 +56,7 @@ public class UserController {
                 createUserDTO.address()
         );
         User user = userService.createUser(userToCreate);
-        UserResponse response = new UserResponse(
-                user.getUserId(),
-                user.getName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAddress(),
-                user.getRole(),
-                user.getCreatedAt()
-        );
+        UserResponse response = UserMapper.toUserResponse(user);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

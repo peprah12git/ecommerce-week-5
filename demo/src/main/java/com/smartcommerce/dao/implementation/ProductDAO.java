@@ -1,10 +1,10 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.model.Product;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 @Repository
 public class ProductDAO implements ProductDaoInterface {
-    private Connection connection;
+    private DataSource dataSource;
 
     private static List<Product> productCache = null;
     private static long cacheTimestamp = 0;
@@ -23,8 +23,8 @@ public class ProductDAO implements ProductDaoInterface {
     private static int cacheHits = 0;
     private static int cacheMisses = 0;
 
-    public ProductDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+    public ProductDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     private boolean isCacheValid() {
@@ -53,7 +53,8 @@ public class ProductDAO implements ProductDaoInterface {
                 "LEFT JOIN Inventory i ON p.product_id = i.product_id " +
                 "WHERE c.category_name = ? ORDER BY p.name";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, category);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
@@ -69,7 +70,8 @@ public class ProductDAO implements ProductDaoInterface {
     @Override
     public boolean addProduct(Product product) {
         String sql = "INSERT INTO Products (name, description, price, category_id) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, product.getProductName());
             pstmt.setString(2, product.getDescription());
             pstmt.setBigDecimal(3, product.getPrice());
@@ -93,7 +95,8 @@ public class ProductDAO implements ProductDaoInterface {
 
     private void createInventoryEntry(int productId) {
         String sql = "INSERT INTO Inventory (product_id, quantity_available) VALUES (?, 0)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, productId);
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -117,13 +120,8 @@ public class ProductDAO implements ProductDaoInterface {
                 "LEFT JOIN Inventory i ON p.product_id = i.product_id " +
                 "ORDER BY p.product_id DESC";
 
-        this.connection = DatabaseConnection.getInstance().getConnection();
-
-        if (connection == null) {
-            return products;
-        }
-
-        try (Statement stmt = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 products.add(extractProduct(rs));
@@ -141,15 +139,14 @@ public class ProductDAO implements ProductDaoInterface {
 
     @Override
     public Product getProductById(int id) {
-        this.connection = DatabaseConnection.getInstance().getConnection();
-
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
                 "LEFT JOIN Categories c ON p.category_id = c.category_id " +
                 "LEFT JOIN Inventory i ON p.product_id = i.product_id " +
                 "WHERE p.product_id = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -165,7 +162,8 @@ public class ProductDAO implements ProductDaoInterface {
     @Override
     public boolean updateProduct(Product product) {
         String sql = "UPDATE Products SET name = ?, description = ?, price = ?, category_id = ? WHERE product_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, product.getProductName());
             pstmt.setString(2, product.getDescription());
             pstmt.setBigDecimal(3, product.getPrice());
@@ -185,7 +183,8 @@ public class ProductDAO implements ProductDaoInterface {
     @Override
     public boolean deleteProduct(int id) {
         String sql = "DELETE FROM Products WHERE product_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             boolean deleted = pstmt.executeUpdate() > 0;
             if (deleted) {
@@ -199,8 +198,6 @@ public class ProductDAO implements ProductDaoInterface {
     }
 
     public List<Product> searchProducts(String term) {
-        this.connection = DatabaseConnection.getInstance().getConnection();
-
         List<Product> products = new ArrayList<>();
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
@@ -208,7 +205,8 @@ public class ProductDAO implements ProductDaoInterface {
                 "LEFT JOIN Inventory i ON p.product_id = i.product_id " +
                 "WHERE p.name LIKE ? OR p.description LIKE ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             String pattern = "%" + term + "%";
             pstmt.setString(1, pattern);
             pstmt.setString(2, pattern);

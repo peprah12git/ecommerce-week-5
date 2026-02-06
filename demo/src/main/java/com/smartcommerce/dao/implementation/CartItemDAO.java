@@ -1,23 +1,28 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.dao.interfaces.CartItemDaoInterface;
+import com.smartcommerce.model.CartItem;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+
+import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-import com.smartcommerce.model.CartItem;
-
 public class CartItemDAO implements CartItemDaoInterface {
+    private DataSource dataSource;
+
     //--------------------Create - Add item to cart
     @Override
     public boolean addToCart(CartItem cartItem) {
         String sql = "INSERT INTO CartItems (user_id, product_id, quantity) VALUES (?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, cartItem.getUserId());
@@ -38,7 +43,7 @@ public class CartItemDAO implements CartItemDaoInterface {
         List<CartItem> cartItems = new ArrayList<>();
         String sql = "SELECT * FROM CartItems WHERE user_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
@@ -64,7 +69,7 @@ public class CartItemDAO implements CartItemDaoInterface {
                 "JOIN Products p ON ci.product_id = p.product_id " +
                 "WHERE ci.user_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
@@ -90,7 +95,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     public CartItem getCartItem(int userId, int productId) {
         String sql = "SELECT * FROM CartItems WHERE user_id = ? AND product_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
@@ -113,7 +118,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     public boolean updateQuantity(int userId, int productId, int quantity) {
         String sql = "UPDATE CartItems SET quantity = ? WHERE user_id = ? AND product_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, quantity);
@@ -132,7 +137,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     public boolean removeFromCart(int userId, int productId) {
         String sql = "DELETE FROM CartItems WHERE user_id = ? AND product_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
@@ -150,7 +155,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     public boolean clearCart(int userId) {
         String sql = "DELETE FROM CartItems WHERE user_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
@@ -167,7 +172,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     public int getCartItemCount(int userId) {
         String sql = "SELECT COUNT(*) FROM CartItems WHERE user_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
@@ -191,7 +196,7 @@ public class CartItemDAO implements CartItemDaoInterface {
                 "JOIN Products p ON ci.product_id = p.product_id " +
                 "WHERE ci.user_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);

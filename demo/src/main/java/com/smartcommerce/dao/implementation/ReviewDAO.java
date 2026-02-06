@@ -1,24 +1,25 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.dao.interfaces.ReviewDaoInterface;
 import com.smartcommerce.model.Review;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReviewDAO implements ReviewDaoInterface {
-    private Connection connection;
+    private DataSource dataSource;
 
-    public ReviewDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+    public ReviewDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
     public boolean addReview(Review review) {
         String sql = "INSERT INTO Reviews (user_id, product_id, rating, comment) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, review.getUserId());
             pstmt.setInt(2, review.getProductId());
             pstmt.setInt(3, review.getRating());
@@ -37,7 +38,8 @@ public class ReviewDAO implements ReviewDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public List<Review> getReviewsByProductId(int productId) {
         List<Review> reviews = new ArrayList<>();
         String sql = "SELECT r.*, u.name as user_name, p.name as product_name " +
@@ -46,7 +48,8 @@ public class ReviewDAO implements ReviewDaoInterface {
                 "LEFT JOIN Products p ON r.product_id = p.product_id " +
                 "WHERE r.product_id = ? ORDER BY r.review_date DESC";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, productId);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
@@ -67,7 +70,8 @@ public class ReviewDAO implements ReviewDaoInterface {
                 "LEFT JOIN Products p ON r.product_id = p.product_id " +
                 "ORDER BY r.review_date DESC";
 
-        try (Statement stmt = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 reviews.add(extractReview(rs));
@@ -77,10 +81,12 @@ public class ReviewDAO implements ReviewDaoInterface {
         }
         return reviews;
     }
-@Override
+
+    @Override
     public boolean deleteReview(int id) {
         String sql = "DELETE FROM Reviews WHERE review_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -88,10 +94,12 @@ public class ReviewDAO implements ReviewDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public double getAverageRating(int productId) {
         String sql = "SELECT AVG(rating) as avg_rating FROM Reviews WHERE product_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, productId);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {

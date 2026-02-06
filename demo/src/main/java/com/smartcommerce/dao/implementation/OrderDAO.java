@@ -1,23 +1,25 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.dao.interfaces.OrderDaoInterface;
 import com.smartcommerce.model.Order;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderDAO  implements OrderDaoInterface {
-    private Connection connection;
+public class OrderDAO implements OrderDaoInterface {
+    private DataSource dataSource;
 
-    public OrderDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+    public OrderDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
-@Override
+
+    @Override
     public boolean addOrder(Order order) {
         String sql = "INSERT INTO Orders (user_id, status, total_amount) VALUES (?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, order.getUserId());
             pstmt.setString(2, order.getStatus());
             pstmt.setBigDecimal(3, order.getTotalAmount());
@@ -35,14 +37,16 @@ public class OrderDAO  implements OrderDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public List<Order> getAllOrders() {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT o.*, u.name as user_name FROM Orders o " +
                 "LEFT JOIN Users u ON o.user_id = u.user_id " +
                 "ORDER BY o.order_date DESC";
 
-        try (Statement stmt = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 orders.add(extractOrder(rs));
@@ -52,12 +56,14 @@ public class OrderDAO  implements OrderDaoInterface {
         }
         return orders;
     }
-@Override
+
+    @Override
     public Order getOrderById(int id) {
         String sql = "SELECT o.*, u.name as user_name FROM Orders o " +
                 "LEFT JOIN Users u ON o.user_id = u.user_id " +
                 "WHERE o.order_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -68,14 +74,16 @@ public class OrderDAO  implements OrderDaoInterface {
         }
         return null;
     }
-@Override
+
+    @Override
     public List<Order> getOrdersByUserId(int userId) {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT o.*, u.name as user_name FROM Orders o " +
                 "LEFT JOIN Users u ON o.user_id = u.user_id " +
                 "WHERE o.user_id = ? ORDER BY o.order_date DESC";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, userId);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
@@ -86,10 +94,12 @@ public class OrderDAO  implements OrderDaoInterface {
         }
         return orders;
     }
-@Override
+
+    @Override
     public boolean updateOrderStatus(int orderId, String status) {
         String sql = "UPDATE Orders SET status = ? WHERE order_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, status);
             pstmt.setInt(2, orderId);
             return pstmt.executeUpdate() > 0;
@@ -98,10 +108,12 @@ public class OrderDAO  implements OrderDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public boolean deleteOrder(int id) {
         String sql = "DELETE FROM Orders WHERE order_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {

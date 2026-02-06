@@ -1,5 +1,5 @@
 package com.smartcommerce.service.imp;
-import org.springframework.stereotype.Service;
+
 import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.exception.BusinessException;
@@ -7,6 +7,7 @@ import com.smartcommerce.exception.DuplicateResourceException;
 import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.Category;
 import com.smartcommerce.model.Product;
+import com.smartcommerce.service.serviceInterface.CategoryServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,7 @@ import java.util.List;
  */
 @Service
 @Transactional
-public class CategoryService {
+public class CategoryService implements CategoryServiceInterface {
 
     private final CategoryDaoInterface categoryDao;
     private final ProductDaoInterface productDao;
@@ -32,10 +33,11 @@ public class CategoryService {
 
     /**
      * Creates a new category
+     *
      * @param category Category object to create
      * @return Created category
      * @throws DuplicateResourceException if category name already exists
-     * @throws BusinessException if category creation fails
+     * @throws BusinessException          if category creation fails
      */
     public Category createCategory(Category category) {
         // Validate input
@@ -80,6 +82,7 @@ public class CategoryService {
 
     /**
      * Retrieves all categories
+     *
      * @return List of all categories
      */
     @Transactional(readOnly = true)
@@ -89,6 +92,7 @@ public class CategoryService {
 
     /**
      * Retrieves a category by ID
+     *
      * @param categoryId Category ID
      * @return Category object
      * @throws ResourceNotFoundException if category not found
@@ -104,6 +108,7 @@ public class CategoryService {
 
     /**
      * Retrieves a category by name
+     *
      * @param categoryName Category name
      * @return Category object
      * @throws ResourceNotFoundException if category not found
@@ -129,12 +134,13 @@ public class CategoryService {
 
     /**
      * Updates an existing category
-     * @param categoryId Category ID to update
+     *
+     * @param categoryId      Category ID to update
      * @param categoryDetails Updated category details
      * @return Updated category
-     * @throws ResourceNotFoundException if category not found
+     * @throws ResourceNotFoundException  if category not found
      * @throws DuplicateResourceException if category name already exists
-     * @throws BusinessException if update fails
+     * @throws BusinessException          if update fails
      */
     public Category updateCategory(int categoryId, Category categoryDetails) {
         // Check if category exists
@@ -187,9 +193,10 @@ public class CategoryService {
 
     /**
      * Deletes a category
+     *
      * @param categoryId Category ID to delete
      * @throws ResourceNotFoundException if category not found
-     * @throws BusinessException if category has products or deletion fails
+     * @throws BusinessException         if category has products or deletion fails
      */
     public void deleteCategory(int categoryId) {
         // Check if category exists
@@ -227,6 +234,7 @@ public class CategoryService {
 
     /**
      * Validates category data
+     *
      * @param category Category to validate
      * @throws BusinessException if validation fails
      */

@@ -1,14 +1,12 @@
 package com.smartcommerce.service.imp;
 
-import com.smartcommerce.service.serviceInterface.UserService;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
 import com.smartcommerce.dao.interfaces.UserDaoInterface;
 import com.smartcommerce.exception.BusinessException;
 import com.smartcommerce.exception.DuplicateResourceException;
 import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.smartcommerce.service.serviceInterface.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,16 +19,17 @@ import java.util.List;
 @Service
 @Transactional
 @AllArgsConstructor
-public class UserServiceImp  {
+public class UserServiceImp implements UserService {
 
-    private  UserDaoInterface userDao;
+    private UserDaoInterface userDao;
 
     /**
      * Creates a new user
+     *
      * @param user User object to create
      * @return Created user
      * @throws DuplicateResourceException if email already exists
-     * @throws BusinessException if user creation fails
+     * @throws BusinessException          if user creation fails
      */
     public User createUser(User user) {
         // Validate input
@@ -64,6 +63,7 @@ public class UserServiceImp  {
 
     /**
      * Retrieves all users
+     *
      * @return List of all users
      */
     @Transactional(readOnly = true)
@@ -73,6 +73,7 @@ public class UserServiceImp  {
 
     /**
      * Retrieves a user by ID
+     *
      * @param userId User ID
      * @return User object
      * @throws ResourceNotFoundException if user not found
@@ -88,6 +89,7 @@ public class UserServiceImp  {
 
     /**
      * Retrieves a user by email
+     *
      * @param email Email address
      * @return User object
      * @throws ResourceNotFoundException if user not found
@@ -107,12 +109,13 @@ public class UserServiceImp  {
 
     /**
      * Updates an existing user
-     * @param userId User ID to update
+     *
+     * @param userId      User ID to update
      * @param userDetails Updated user details
      * @return Updated user
-     * @throws ResourceNotFoundException if user not found
+     * @throws ResourceNotFoundException  if user not found
      * @throws DuplicateResourceException if email already exists for another user
-     * @throws BusinessException if update fails
+     * @throws BusinessException          if update fails
      */
     public User updateUser(int userId, User userDetails) {
         // Check if user exists
@@ -159,9 +162,10 @@ public class UserServiceImp  {
 
     /**
      * Deletes a user
+     *
      * @param userId User ID to delete
      * @throws ResourceNotFoundException if user not found
-     * @throws BusinessException if deletion fails
+     * @throws BusinessException         if deletion fails
      */
     public void deleteUser(int userId) {
         // Check if user exists
@@ -179,6 +183,7 @@ public class UserServiceImp  {
 
     /**
      * Validates user data
+     *
      * @param user User to validate
      * @throws BusinessException if validation fails
      */
@@ -210,6 +215,7 @@ public class UserServiceImp  {
 
     /**
      * Simple email validation
+     *
      * @param email Email to validate
      * @return true if valid, false otherwise
      */

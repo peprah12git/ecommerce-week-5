@@ -3,7 +3,6 @@ package com.smartcommerce.dao.implementation;
 import com.smartcommerce.config.DatabaseConnection;
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.model.Product;
-//import com.smartcommerce.util.PerformanceMonitor;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class ProductDAO implements ProductDaoInterface {
 
     private boolean isCacheValid() {
         return productCache != null &&
-               (System.currentTimeMillis() - cacheTimestamp) < CACHE_TTL_MS;
+                (System.currentTimeMillis() - cacheTimestamp) < CACHE_TTL_MS;
     }
 
     public void invalidateCache() {
@@ -46,11 +45,12 @@ public class ProductDAO implements ProductDaoInterface {
         int total = cacheHits + cacheMisses;
         double hitRate = total > 0 ? (cacheHits * 100.0 / total) : 0;
         return String.format("[CACHE] Hits: %d, Misses: %d, Hit Rate: %.1f%%",
-                             cacheHits, cacheMisses, hitRate);
+                cacheHits, cacheMisses, hitRate);
     }
-@Override
+
+    @Override
     public List<Product> getProductsByCategory(String category) {
-       // long startTime = monitor.startTimer();
+        // long startTime = monitor.startTimer();
 
         List<Product> products = new ArrayList<>();
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
@@ -72,7 +72,8 @@ public class ProductDAO implements ProductDaoInterface {
         monitor.recordQueryTime("getProductsByCategory", startTime);
         return products;
     }
-@Override
+
+    @Override
     public boolean addProduct(Product product) {
         String sql = "INSERT INTO Products (name, description, price, category_id) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -96,7 +97,8 @@ public class ProductDAO implements ProductDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     private void createInventoryEntry(int productId) {
         String sql = "INSERT INTO Inventory (product_id, quantity_available) VALUES (?, 0)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -106,7 +108,8 @@ public class ProductDAO implements ProductDaoInterface {
             // Silent
         }
     }
-@Override
+
+    @Override
     public List<Product> getAllProducts() {
         long perfStartTime = monitor.startTimer();
 
@@ -147,7 +150,8 @@ public class ProductDAO implements ProductDaoInterface {
         monitor.recordQueryTime("getAllProducts", perfStartTime);
         return products;
     }
-@Override
+
+    @Override
     public Product getProductById(int id) {
         long startTime = monitor.startTimer();
 
@@ -174,7 +178,8 @@ public class ProductDAO implements ProductDaoInterface {
         monitor.recordQueryTime("getProductById", startTime);
         return null;
     }
-@Override
+
+    @Override
     public boolean updateProduct(Product product) {
         String sql = "UPDATE Products SET name = ?, description = ?, price = ?, category_id = ? WHERE product_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -193,7 +198,8 @@ public class ProductDAO implements ProductDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public boolean deleteProduct(int id) {
         String sql = "DELETE FROM Products WHERE product_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

@@ -1,0 +1,94 @@
+package com.smartcommerce.service.serviceInterface;
+
+import com.smartcommerce.exception.BusinessException;
+import com.smartcommerce.exception.ResourceNotFoundException;
+import com.smartcommerce.model.Product;
+
+import java.util.List;
+
+/**
+ * Service interface for Product entity
+ * Defines business operations related to products
+ */
+public interface ProductServiceInterface {
+
+    /**
+     * Creates a new product
+     *
+     * @param product Product object to create
+     * @return Created product
+     * @throws ResourceNotFoundException if category not found
+     * @throws BusinessException         if product creation fails
+     */
+    Product createProduct(Product product);
+
+    /**
+     * Retrieves all products
+     *
+     * @return List of all products
+     */
+    List<Product> getAllProducts();
+
+    /**
+     * Retrieves a product by ID
+     *
+     * @param productId Product ID
+     * @return Product object
+     * @throws ResourceNotFoundException if product not found
+     */
+    Product getProductById(int productId);
+
+    /**
+     * Retrieves products by category name
+     *
+     * @param categoryName Category name
+     * @return List of products in the category
+     * @throws BusinessException if category name is invalid
+     */
+    List<Product> getProductsByCategory(String categoryName);
+
+    /**
+     * Searches for products by name or description
+     *
+     * @param searchTerm Search term
+     * @return List of matching products
+     * @throws BusinessException if search term is invalid
+     */
+    List<Product> searchProducts(String searchTerm);
+
+    /**
+     * Updates an existing product
+     *
+     * @param productId      Product ID to update
+     * @param productDetails Updated product details
+     * @return Updated product
+     * @throws ResourceNotFoundException if product or category not found
+     * @throws BusinessException         if update fails
+     */
+    Product updateProduct(int productId, Product productDetails);
+
+    /**
+     * Updates product quantity
+     *
+     * @param productId Product ID
+     * @param quantity  New quantity
+     * @return Updated product
+     * @throws ResourceNotFoundException if product not found
+     * @throws BusinessException         if quantity is invalid or update fails
+     */
+    Product updateProductQuantity(int productId, int quantity);
+
+    /**
+     * Deletes a product
+     *
+     * @param productId Product ID to delete
+     * @throws ResourceNotFoundException if product not found
+     * @throws BusinessException         if deletion fails
+     */
+    void deleteProduct(int productId);
+
+    /**
+     * Invalidates the product cache
+     */
+    void invalidateProductCache();
+}

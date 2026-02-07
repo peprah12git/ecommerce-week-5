@@ -8,7 +8,7 @@ spring:
       maximum-pool-size: 5
       connection-timeout: 20000
 
-logging:
-  level:
-    com.ecommerce: DEBUG
-    org.springframework.jdbc.core: DEBUG  # Shows SQL queries
+#logging:
+#  level:
+#    com.ecommerce: DEBUG
+#    org.springframework.jdbc.core: DEBUG  # Shows SQL queries

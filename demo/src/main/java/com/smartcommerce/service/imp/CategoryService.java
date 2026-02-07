@@ -1,5 +1,11 @@
 package com.smartcommerce.service.imp;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.exception.BusinessException;
@@ -8,11 +14,6 @@ import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.Category;
 import com.smartcommerce.model.Product;
 import com.smartcommerce.service.serviceInterface.CategoryServiceInterface;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * Service layer for Category entity
@@ -50,14 +51,6 @@ public class CategoryService implements CategoryServiceInterface {
 
         if (nameExists) {
             throw new DuplicateResourceException("Category", "name", category.getCategoryName());
-        }
-
-        // Validate parent category if provided
-        if (category.getParentCategoryId() != null && category.getParentCategoryId() > 0) {
-            Category parentCategory = categoryDao.getCategoryById(category.getParentCategoryId());
-            if (parentCategory == null) {
-                throw new ResourceNotFoundException("Parent Category", "id", category.getParentCategoryId());
-            }
         }
 
         // Add category
@@ -164,23 +157,10 @@ public class CategoryService implements CategoryServiceInterface {
             }
         }
 
-        // Validate parent category if provided
-        if (categoryDetails.getParentCategoryId() != null && categoryDetails.getParentCategoryId() > 0) {
-            // Prevent circular reference (category cannot be its own parent)
-            if (categoryDetails.getParentCategoryId() == categoryId) {
-                throw new BusinessException("Category cannot be its own parent");
-            }
-
-            Category parentCategory = categoryDao.getCategoryById(categoryDetails.getParentCategoryId());
-            if (parentCategory == null) {
-                throw new ResourceNotFoundException("Parent Category", "id", categoryDetails.getParentCategoryId());
-            }
-        }
-
         // Update category details
         existingCategory.setCategoryName(categoryDetails.getCategoryName());
         existingCategory.setDescription(categoryDetails.getDescription());
-        existingCategory.setParentCategoryId(categoryDetails.getParentCategoryId());
+
 
         // Perform update
         boolean success = categoryDao.updateCategory(existingCategory);
@@ -211,18 +191,6 @@ public class CategoryService implements CategoryServiceInterface {
             throw new BusinessException(
                     String.format("Cannot delete category '%s' because it has %d product(s) associated with it",
                             category.getCategoryName(), productsInCategory.size()));
-        }
-
-        // Check if category has child categories
-        List<Category> allCategories = categoryDao.getAllCategories();
-        boolean hasChildren = allCategories.stream()
-                .anyMatch(c -> c.getParentCategoryId() != null
-                        && c.getParentCategoryId() == categoryId);
-
-        if (hasChildren) {
-            throw new BusinessException(
-                    String.format("Cannot delete category '%s' because it has subcategories",
-                            category.getCategoryName()));
         }
 
         // Perform deletion

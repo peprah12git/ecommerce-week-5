@@ -22,9 +22,6 @@ public class CategoryResponse {
     @Schema(description = "Category description", example = "Electronic devices and accessories")
     private String description;
 
-    @Schema(description = "Parent category ID for subcategories", example = "null", nullable = true)
-    private Integer parentCategoryId;
-
     @Schema(description = "Category creation timestamp")
     private Timestamp createdAt;
 
@@ -32,6 +29,5 @@ public class CategoryResponse {
     public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
     public void setDescription(String description) { this.description = description; }
-    public void setParentCategoryId(Integer parentCategoryId) { this.parentCategoryId = parentCategoryId; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }

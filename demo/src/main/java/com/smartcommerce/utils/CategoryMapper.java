@@ -23,7 +23,6 @@ public class CategoryMapper {
         response.setCategoryId(category.getCategoryId());
         response.setCategoryName(category.getCategoryName());
         response.setDescription(category.getDescription());
-        response.setParentCategoryId(category.getParentCategoryId());
         response.setCreatedAt(category.getCreatedAt());
 
         return response;

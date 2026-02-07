@@ -1,13 +1,19 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
-import com.smartcommerce.model.Category;
-import org.springframework.stereotype.Repository;
-
-import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.sql.DataSource;
+
+import org.springframework.stereotype.Repository;
+
+import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
+import com.smartcommerce.model.Category;
 
 /**
  * Data Access Object for Category operations
@@ -38,7 +44,6 @@ public class CategoryDAO implements CategoryDaoInterface {
                 category.setCategoryId(rs.getInt("category_id"));
                 category.setCategoryName(rs.getString("category_name"));
                 category.setDescription(rs.getString("description"));
-                category.setParentCategoryId(rs.getObject("parent_category_id", Integer.class));
                 categories.add(category);
             }
         } catch (SQLException e) {
@@ -53,18 +58,12 @@ public class CategoryDAO implements CategoryDaoInterface {
      */
     @Override
     public boolean addCategory(Category category) {
-        String sql = "INSERT INTO Categories (category_name, description, parent_category_id) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Categories (category_name, description) VALUES (?, ?)";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, category.getCategoryName());
             pstmt.setString(2, category.getDescription());
-
-            if (category.getParentCategoryId() != null) {
-                pstmt.setInt(3, category.getParentCategoryId());
-            } else {
-                pstmt.setNull(3, Types.INTEGER);
-            }
 
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
@@ -98,7 +97,6 @@ public class CategoryDAO implements CategoryDaoInterface {
                 category.setCategoryId(rs.getInt("category_id"));
                 category.setCategoryName(rs.getString("category_name"));
                 category.setDescription(rs.getString("description"));
-                category.setParentCategoryId(rs.getObject("parent_category_id", Integer.class));
                 return category;
             }
         } catch (SQLException e) {

@@ -186,6 +186,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
+    // Note: The path variable is named "id" to match the method parameter, but it can be changed to "productId" if desired
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(
             @Parameter(description = "Product ID", required = true, example = "1")
@@ -201,7 +202,7 @@ public class ProductController {
      */
     @Operation(summary = "Get products by category", description = "Retrieves all products belonging to a specific category")
     @ApiResponse(responseCode = "200", description = "Products retrieved successfully")
-    @GetMapping("/category/{categoryName}")
+        @GetMapping("/category/{categoryName}")
     public ResponseEntity<List<ProductResponse>> getProductsByCategory(
             @Parameter(description = "Category name", required = true, example = "Electronics")
             @PathVariable String categoryName) {

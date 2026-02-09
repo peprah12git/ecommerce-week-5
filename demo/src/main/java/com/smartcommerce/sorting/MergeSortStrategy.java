@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.smartcommerce.utils.PerformanceMonitor;
+
 /**
  * Merge Sort implementation of the SortStrategy interface.
  * 
@@ -22,14 +24,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class MergeSortStrategy<T> implements SortStrategy<T> {
 
+    private final PerformanceMonitor performanceMonitor = PerformanceMonitor.getInstance();
+
     @Override
     public List<T> sort(List<T> items, Comparator<T> comparator) {
+        long startTime = performanceMonitor.startTimer();
+        
         if (items == null || items.size() <= 1) {
-            return items == null ? new ArrayList<>() : new ArrayList<>(items);
+            List<T> result = items == null ? new ArrayList<>() : new ArrayList<>(items);
+            performanceMonitor.recordQueryTime("MergeSort", startTime);
+            return result;
         }
 
         List<T> result = new ArrayList<>(items);
         mergeSort(result, 0, result.size() - 1, comparator);
+        
+        performanceMonitor.recordQueryTime("MergeSort", startTime);
         return result;
     }
 

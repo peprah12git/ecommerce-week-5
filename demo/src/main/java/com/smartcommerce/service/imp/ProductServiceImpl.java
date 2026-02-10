@@ -1,5 +1,13 @@
 package com.smartcommerce.service.imp;
 
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.dtos.request.ProductFilterDTO;
@@ -8,14 +16,7 @@ import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.Category;
 import com.smartcommerce.model.Product;
 import com.smartcommerce.service.serviceInterface.ProductService;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.smartcommerce.sorting.SortStrategy;
 
 /**
  * Service implementation for Product entity
@@ -23,11 +24,20 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional
-@AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductDaoInterface productDao;
     private final CategoryDaoInterface categoryDao;
+    private final SortStrategy<Product> sortStrategy;
+
+    // Manual constructor for dependency injection
+    public ProductServiceImpl(ProductDaoInterface productDao, 
+                              CategoryDaoInterface categoryDao,
+                              SortStrategy<Product> sortStrategy) {
+        this.productDao = productDao;
+        this.categoryDao = categoryDao;
+        this.sortStrategy = sortStrategy;
+    }
 
     @Override
     public Product createProduct(Product product) {
@@ -184,7 +194,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * Apply sorting to product list
+     * Apply sorting to product list using the injected sort strategy (Merge Sort)
      */
     private List<Product> applySorting(List<Product> products, String sortBy, String sortDirection) {
         if (sortBy == null || sortBy.trim().isEmpty()) {
@@ -201,9 +211,8 @@ public class ProductServiceImpl implements ProductService {
             comparator = comparator.reversed();
         }
 
-        return products.stream()
-                .sorted(comparator)
-                .collect(Collectors.toList());
+        // Use the injected sort strategy (Merge Sort) for sorting
+        return sortStrategy.sort(products, comparator);
     }
 
     /**

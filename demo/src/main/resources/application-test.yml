@@ -7,6 +7,6 @@ spring:
     hikari:
       maximum-pool-size: 3
 
-logging:
-  level:
-    com.ecommerce: INFO
+#logging:
+#  level:
+#    com.ecommerce: INFO

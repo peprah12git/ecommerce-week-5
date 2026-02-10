@@ -1,22 +1,30 @@
 package com.smartcommerce.dao.implementation;
 
-
-import com.smartcommerce.config.DatabaseConnection;
-import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
-import com.smartcommerce.model.Category;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.sql.DataSource;
+
+import org.springframework.stereotype.Repository;
+
+import com.smartcommerce.dao.interfaces.CategoryDaoInterface;
+import com.smartcommerce.model.Category;
 
 /**
  * Data Access Object for Category operations
  */
+@Repository
 public class CategoryDAO implements CategoryDaoInterface {
-    private Connection connection;
+    private DataSource dataSource;
 
-    public CategoryDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+    // Constructor should accept DataSource as dependency injection
+    public CategoryDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     /**
@@ -27,7 +35,8 @@ public class CategoryDAO implements CategoryDaoInterface {
         List<Category> categories = new ArrayList<>();
         String sql = "SELECT * FROM Categories ORDER BY category_name";
 
-        try (Statement stmt = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -35,8 +44,6 @@ public class CategoryDAO implements CategoryDaoInterface {
                 category.setCategoryId(rs.getInt("category_id"));
                 category.setCategoryName(rs.getString("category_name"));
                 category.setDescription(rs.getString("description"));
-                category.setParentCategoryId(rs.getObject("category_id", Integer.class));
-//                category.setCreatedAt(rs.getTimestamp("created_at"));
                 categories.add(category);
             }
         } catch (SQLException e) {
@@ -51,17 +58,12 @@ public class CategoryDAO implements CategoryDaoInterface {
      */
     @Override
     public boolean addCategory(Category category) {
-        String sql = "INSERT INTO Categories (category_name, description, category_id) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Categories (category_name, description) VALUES (?, ?)";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, category.getCategoryName());
             pstmt.setString(2, category.getDescription());
-
-            if (category.getParentCategoryId() != null) {
-                pstmt.setInt(3, category.getParentCategoryId());
-            } else {
-                pstmt.setNull(3, Types.INTEGER);
-            }
 
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
@@ -85,7 +87,8 @@ public class CategoryDAO implements CategoryDaoInterface {
     public Category getCategoryById(int categoryId) {
         String sql = "SELECT * FROM Categories WHERE category_id = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, categoryId);
             ResultSet rs = pstmt.executeQuery();
 
@@ -94,7 +97,6 @@ public class CategoryDAO implements CategoryDaoInterface {
                 category.setCategoryId(rs.getInt("category_id"));
                 category.setCategoryName(rs.getString("category_name"));
                 category.setDescription(rs.getString("description"));
-                category.setParentCategoryId(rs.getObject("category_id", Integer.class));
                 return category;
             }
         } catch (SQLException e) {
@@ -111,7 +113,8 @@ public class CategoryDAO implements CategoryDaoInterface {
     public boolean updateCategory(Category category) {
         String sql = "UPDATE Categories SET category_name = ?, description = ? WHERE category_id = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, category.getCategoryName());
             pstmt.setString(2, category.getDescription());
             pstmt.setInt(3, category.getCategoryId());
@@ -131,7 +134,8 @@ public class CategoryDAO implements CategoryDaoInterface {
     public boolean deleteCategory(int categoryId) {
         String sql = "DELETE FROM Categories WHERE category_id = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, categoryId);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {

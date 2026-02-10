@@ -2,6 +2,7 @@ package com.smartcommerce.dtos.response;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,17 +14,38 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Paginated response wrapper with sorting and pagination metadata")
 public class PagedResponse<T> {
-    private List<T> content;           // The actual data
-    private int pageNumber;            // Current page (0-indexed)
-    private int pageSize;              // Items per page
-    private long totalElements;        // Total number of items across all pages
-    private int totalPages;            // Total number of pages
-    private boolean first;             // Is this the first page?
-    private boolean last;              // Is this the last page?
-    private boolean empty;             // Is the content empty?
-    private String sortBy;             // Field used for sorting
-    private String sortDirection;      // ASC or DESC
+
+    @Schema(description = "List of items on the current page")
+    private List<T> content;
+
+    @Schema(description = "Current page number (0-indexed)", example = "0")
+    private int pageNumber;
+
+    @Schema(description = "Number of items per page", example = "10")
+    private int pageSize;
+
+    @Schema(description = "Total number of items across all pages", example = "42")
+    private long totalElements;
+
+    @Schema(description = "Total number of pages", example = "5")
+    private int totalPages;
+
+    @Schema(description = "Whether this is the first page", example = "true")
+    private boolean first;
+
+    @Schema(description = "Whether this is the last page", example = "false")
+    private boolean last;
+
+    @Schema(description = "Whether the content list is empty", example = "false")
+    private boolean empty;
+
+    @Schema(description = "Field used for sorting", example = "productId")
+    private String sortBy;
+
+    @Schema(description = "Sort direction", example = "ASC", allowableValues = {"ASC", "DESC"})
+    private String sortDirection;
 
     /**
      * Constructor for creating paginated response

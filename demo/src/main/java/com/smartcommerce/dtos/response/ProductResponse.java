@@ -1,22 +1,50 @@
 package com.smartcommerce.dtos.response;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Product information returned by the API")
 public class ProductResponse {
+
+    @Schema(description = "Unique product identifier", example = "1")
     private int productId;
+
+    @Schema(description = "Product name", example = "Wireless Bluetooth Headphones")
     private String productName;
+
+    @Schema(description = "Product description", example = "High-quality wireless headphones")
     private String description;
+
+    @Schema(description = "Product price", example = "49.99")
     private BigDecimal price;
+
+    @Schema(description = "Category ID the product belongs to", example = "1")
     private int categoryId;
+
+    @Schema(description = "Category name", example = "Electronics")
     private String categoryName;
+
+    @Schema(description = "Quantity available in stock", example = "100")
     private int quantityAvailable;
+
+    @Schema(description = "Product creation timestamp")
     private Timestamp createdAt;
+
+    // Manual setters for compatibility
+    public void setProductId(int productId) { this.productId = productId; }
+    public void setProductName(String productName) { this.productName = productName; }
+    public void setDescription(String description) { this.description = description; }
+    public void setPrice(BigDecimal price) { this.price = price; }
+    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public void setQuantityAvailable(int quantityAvailable) { this.quantityAvailable = quantityAvailable; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }

@@ -1,23 +1,27 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.config.DatabaseConnection;
-import com.smartcommerce.model.User;
 import com.smartcommerce.dao.interfaces.UserDaoInterface;
+import com.smartcommerce.model.User;
+import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class UserDAO implements UserDaoInterface {
-    private Connection connection;
+    private DataSource dataSource;
 
-    public UserDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+    public UserDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
-@Override
+
+    @Override
     public boolean addUser(User user) {
         String sql = "INSERT INTO Users (name, email, password, phone, address, role) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getEmail());
             pstmt.setString(3, user.getPassword());
@@ -38,12 +42,14 @@ public class UserDAO implements UserDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM Users ORDER BY user_id";
 
-        try (Statement stmt = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 users.add(extractUser(rs));
@@ -53,10 +59,12 @@ public class UserDAO implements UserDaoInterface {
         }
         return users;
     }
-@Override
+
+    @Override
     public User getUserById(int id) {
         String sql = "SELECT * FROM Users WHERE user_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -67,16 +75,17 @@ public class UserDAO implements UserDaoInterface {
         }
         return null;
     }
-    /*
-    Java sends the sql query to the database to fetch a user record where the email matches the provided email parameter.
-     If a matching record is found, it extracts the user details from the ResultSet and returns a User.
-     this is done by prepared statement to prevent SQL injection attacks.
 
-    */
+    /**
+     * Java sends the SQL query to the database to fetch a user record where the email matches the provided email parameter.
+     * If a matching record is found, it extracts the user details from the ResultSet and returns a User.
+     * This is done by prepared statement to prevent SQL injection attacks.
+     */
     @Override
     public User getUserByEmail(String email) {
         String sql = "SELECT * FROM Users WHERE email = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -86,14 +95,13 @@ public class UserDAO implements UserDaoInterface {
             System.err.println("Error fetching user by email: " + e.getMessage());
         }
         return null;
-        // create a notification manager, it going to be a notification manger concrete class,  dependency which i s an interfacenotification service is an interface, email notification(sending email) service & sms notification(sending sms). both implement notifcation
-        // in the notification service one single abstract class called send. in the notification manager , we will have one method called sendNotification, in this send we are going to call the call send method of the notifcation service injected.
-
     }
-@Override
+
+    @Override
     public boolean updateUser(User user) {
         String sql = "UPDATE Users SET name = ?, email = ?, phone = ?, address = ?, role = ? WHERE user_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getEmail());
             pstmt.setString(3, user.getPhone());
@@ -106,10 +114,12 @@ public class UserDAO implements UserDaoInterface {
         }
         return false;
     }
-@Override
+
+    @Override
     public boolean deleteUser(int id) {
         String sql = "DELETE FROM Users WHERE user_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {

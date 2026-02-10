@@ -3,15 +3,22 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Package, Tag, ShoppingCart, Heart, Share2 } from 'lucide-react';
 import Loading from '../../../components/Loading/Loading';
 import ProductService from '../../../services/productService';
+import CartService from '../../../services/cartService';
+import { useApp } from '../../../context/AppContext';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showNotification } = useApp();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
+
+  // For demo purposes, using a fixed user ID. In production, get from auth context
+  const userId = 1;
 
   useEffect(() => {
     fetchProduct();
@@ -33,6 +40,19 @@ const ProductDetail = () => {
       style: 'currency',
       currency: 'USD',
     }).format(price);
+  };
+
+  const handleAddToCart = async () => {
+    setAddingToCart(true);
+    try {
+      await CartService.addToCart(userId, product.productId, quantity);
+      showNotification(`Added ${quantity} ${product.productName} to cart!`, 'success');
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      showNotification(error.response?.data?.message || 'Failed to add item to cart', 'error');
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   if (loading) {
@@ -124,10 +144,11 @@ const ProductDetail = () => {
             <div className="action-buttons">
               <button
                 className="btn btn-primary btn-lg add-to-cart"
-                disabled={product.quantityAvailable === 0}
+                disabled={product.quantityAvailable === 0 || addingToCart}
+                onClick={handleAddToCart}
               >
                 <ShoppingCart size={20} />
-                Add to Cart
+                {addingToCart ? 'Adding...' : 'Add to Cart'}
               </button>
               <button className="btn btn-outline icon-btn">
                 <Heart size={20} />

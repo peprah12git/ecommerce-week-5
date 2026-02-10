@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Search, User, Menu } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, ShoppingCart } from 'lucide-react';
 import './Header.css';
 
 const Header = () => {
@@ -30,6 +30,9 @@ const Header = () => {
         <div className="header-actions">
           <Link to="/products" className="search-btn">
             <Search size={20} />
+          </Link>
+          <Link to="/cart" className="cart-btn">
+            <ShoppingCart size={20} />
           </Link>
           <Link to="/register" className="user-btn">
             <User size={20} />

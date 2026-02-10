@@ -17,6 +17,7 @@ import com.smartcommerce.model.Order;
 import com.smartcommerce.model.OrderItem;
 import com.smartcommerce.model.Product;
 import com.smartcommerce.model.User;
+import com.smartcommerce.service.serviceInterface.InventoryServiceInterface;
 import com.smartcommerce.service.serviceInterface.OrderService;
 
 /**
@@ -31,6 +32,7 @@ public class OrderServiceImp implements OrderService {
     private final OrderItemDaoInterface orderItemDao;
     private final UserDaoInterface userDao;
     private final ProductDaoInterface productDao;
+    private final InventoryServiceInterface inventoryService;
 
     // Valid order statuses
     private static final List<String> VALID_STATUSES = List.of(
@@ -41,11 +43,13 @@ public class OrderServiceImp implements OrderService {
     public OrderServiceImp(OrderDaoInterface orderDao,
                            OrderItemDaoInterface orderItemDao,
                            UserDaoInterface userDao,
-                           ProductDaoInterface productDao) {
+                           ProductDaoInterface productDao,
+                           InventoryServiceInterface inventoryService) {
         this.orderDao = orderDao;
         this.orderItemDao = orderItemDao;
         this.userDao = userDao;
         this.productDao = productDao;
+        this.inventoryService = inventoryService;
     }
 
     @Override
@@ -103,6 +107,15 @@ public class OrderServiceImp implements OrderService {
             boolean itemCreated = orderItemDao.addOrderItem(item);
             if (!itemCreated) {
                 throw new BusinessException("Failed to add order item for product ID: " + item.getProductId());
+            }
+        }
+
+        // Reduce inventory for ordered items
+        for (OrderItem item : orderItems) {
+            boolean stockReduced = inventoryService.reduceStock(item.getProductId(), item.getQuantity());
+            if (!stockReduced) {
+                throw new BusinessException("Failed to reduce stock for product ID: " + item.getProductId() + 
+                        ". Order creation failed.");
             }
         }
 
@@ -205,10 +218,23 @@ public class OrderServiceImp implements OrderService {
             throw new BusinessException("Order is already cancelled");
         }
 
+        // Get order items to restore inventory
+        List<OrderItem> orderItems = orderItemDao.getOrderItemsByOrderId(orderId);
+
         // Update status to cancelled
         boolean updated = orderDao.updateOrderStatus(orderId, "cancelled");
         if (!updated) {
             throw new BusinessException("Failed to cancel order");
+        }
+
+        // Restore inventory for cancelled order items
+        for (OrderItem item : orderItems) {
+            boolean stockRestored = inventoryService.addStock(item.getProductId(), item.getQuantity());
+            if (!stockRestored) {
+                // Log warning but don't fail the cancellation
+                System.err.println("Warning: Failed to restore stock for product ID: " + item.getProductId() + 
+                        " during order cancellation");
+            }
         }
 
         // Return updated order

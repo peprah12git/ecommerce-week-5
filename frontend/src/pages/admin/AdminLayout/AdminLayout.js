@@ -8,6 +8,8 @@ import {
   Settings,
   ArrowLeft,
   Menu,
+  ClipboardList,
+  Warehouse,
 } from 'lucide-react';
 import './AdminLayout.css';
 
@@ -18,6 +20,8 @@ const AdminLayout = () => {
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/admin/products', icon: Package, label: 'Products' },
     { path: '/admin/categories', icon: Tag, label: 'Categories' },
+    { path: '/admin/orders', icon: ClipboardList, label: 'Orders' },
+    { path: '/admin/inventory', icon: Warehouse, label: 'Inventory' },
   ];
 
   const isActive = (path, exact = false) => {

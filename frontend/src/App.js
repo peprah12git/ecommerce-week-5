@@ -11,6 +11,7 @@ import Products from './pages/client/Products/Products';
 import ProductDetail from './pages/client/ProductDetail/ProductDetail';
 import Categories from './pages/client/Categories/Categories';
 import Register from './pages/client/Register/Register';
+import Cart from './pages/client/Cart/Cart';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout/AdminLayout';
@@ -19,6 +20,8 @@ import ProductsAdmin from './pages/admin/Products/ProductsAdmin';
 import ProductForm from './pages/admin/Products/ProductForm';
 import CategoriesAdmin from './pages/admin/Categories/CategoriesAdmin';
 import CategoryForm from './pages/admin/Categories/CategoryForm';
+import OrdersAdmin from './pages/admin/Orders/OrdersAdmin';
+import InventoryAdmin from './pages/admin/Inventory/InventoryAdmin';
 
 // Client Layout wrapper
 const ClientLayout = () => (
@@ -40,6 +43,7 @@ function App() {
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/cart" element={<Cart />} />
           </Route>
 
           {/* Admin Routes */}
@@ -51,6 +55,8 @@ function App() {
             <Route path="categories" element={<CategoriesAdmin />} />
             <Route path="categories/new" element={<CategoryForm />} />
             <Route path="categories/:id" element={<CategoryForm />} />
+            <Route path="orders" element={<OrdersAdmin />} />
+            <Route path="inventory" element={<InventoryAdmin />} />
           </Route>
         </Routes>
       </Router>

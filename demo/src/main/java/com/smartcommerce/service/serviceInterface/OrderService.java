@@ -1,4 +1,90 @@
 package com.smartcommerce.service.serviceInterface;
 
+import java.util.List;
+
+import com.smartcommerce.exception.BusinessException;
+import com.smartcommerce.exception.ResourceNotFoundException;
+import com.smartcommerce.model.Order;
+import com.smartcommerce.model.OrderItem;
+
+/**
+ * Service interface for Order entity
+ * Defines business operations related to orders
+ */
 public interface OrderService {
+
+    /**
+     * Creates a new order with order items
+     *
+     * @param order Order object to create
+     * @param orderItems List of order items
+     * @return Created order with generated ID
+     * @throws ResourceNotFoundException if user or product not found
+     * @throws BusinessException if order creation fails
+     */
+    Order createOrder(Order order, List<OrderItem> orderItems);
+
+    /**
+     * Retrieves all orders
+     *
+     * @return List of all orders
+     */
+    List<Order> getAllOrders();
+
+    /**
+     * Retrieves an order by ID
+     *
+     * @param orderId Order ID
+     * @return Order object with order items
+     * @throws ResourceNotFoundException if order not found
+     */
+    Order getOrderById(int orderId);
+
+    /**
+     * Retrieves all orders for a specific user
+     *
+     * @param userId User ID
+     * @return List of orders for the user
+     * @throws ResourceNotFoundException if user not found
+     */
+    List<Order> getOrdersByUserId(int userId);
+
+    /**
+     * Updates the status of an order
+     *
+     * @param orderId Order ID
+     * @param status New status
+     * @return Updated order
+     * @throws ResourceNotFoundException if order not found
+     * @throws BusinessException if status update fails
+     */
+    Order updateOrderStatus(int orderId, String status);
+
+    /**
+     * Cancels an order (sets status to 'cancelled')
+     *
+     * @param orderId Order ID
+     * @return Cancelled order
+     * @throws ResourceNotFoundException if order not found
+     * @throws BusinessException if order cannot be cancelled
+     */
+    Order cancelOrder(int orderId);
+
+    /**
+     * Deletes an order and its items
+     *
+     * @param orderId Order ID
+     * @throws ResourceNotFoundException if order not found
+     * @throws BusinessException if order deletion fails
+     */
+    void deleteOrder(int orderId);
+
+    /**
+     * Gets order items for a specific order
+     *
+     * @param orderId Order ID
+     * @return List of order items
+     * @throws ResourceNotFoundException if order not found
+     */
+    List<OrderItem> getOrderItems(int orderId);
 }

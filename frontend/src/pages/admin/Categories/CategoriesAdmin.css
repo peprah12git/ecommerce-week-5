@@ -1,0 +1,10 @@
+.category-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #374151;
+}
+
+.category-name-cell svg {
+  color: #3b82f6;
+}

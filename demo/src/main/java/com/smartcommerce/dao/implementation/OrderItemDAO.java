@@ -1,16 +1,26 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.dao.interfaces.OrderItemDaoInterface;
-import com.smartcommerce.model.OrderItem;
-
-import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderItemDAO implements OrderItemDaoInterface {
-    private DataSource dataSource;
+import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.smartcommerce.dao.interfaces.OrderItemDaoInterface;
+import com.smartcommerce.model.OrderItem;
+
+@Repository
+public class OrderItemDAO implements OrderItemDaoInterface {
+    private final DataSource dataSource;
+
+    @Autowired
     public OrderItemDAO(DataSource dataSource) {
         this.dataSource = dataSource;
     }

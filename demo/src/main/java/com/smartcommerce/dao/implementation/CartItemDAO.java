@@ -1,10 +1,5 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.dao.interfaces.CartItemDaoInterface;
-import com.smartcommerce.model.CartItem;
-import org.springframework.jdbc.datasource.DataSourceUtils;
-
-import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,8 +8,23 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.stereotype.Repository;
+
+import com.smartcommerce.dao.interfaces.CartItemDaoInterface;
+import com.smartcommerce.model.CartItem;
+
+@Repository
 public class CartItemDAO implements CartItemDaoInterface {
-    private DataSource dataSource;
+    private final DataSource dataSource;
+
+    @Autowired
+    public CartItemDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     //--------------------Create - Add item to cart
     @Override
@@ -134,6 +144,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     }
 
     // Delete - Remove item from cart
+    @Override
     public boolean removeFromCart(int userId, int productId) {
         String sql = "DELETE FROM CartItems WHERE user_id = ? AND product_id = ?";
 
@@ -152,6 +163,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     }
 
     // Delete - Clear entire cart for user
+    @Override
     public boolean clearCart(int userId) {
         String sql = "DELETE FROM CartItems WHERE user_id = ?";
 
@@ -169,6 +181,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     }
 
     // Get cart item count for user
+    @Override
     public int getCartItemCount(int userId) {
         String sql = "SELECT COUNT(*) FROM CartItems WHERE user_id = ?";
 
@@ -190,6 +203,7 @@ public class CartItemDAO implements CartItemDaoInterface {
     }
 
     // Get total cart value
+    @Override
     public BigDecimal getCartTotal(int userId) {
         String sql = "SELECT SUM(ci.quantity * p.price) as total " +
                 "FROM CartItems ci " +

@@ -1,0 +1,164 @@
+package com.smartcommerce.controller;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.stereotype.Controller;
+
+import com.smartcommerce.dtos.request.ProductFilterDTO;
+import com.smartcommerce.model.Product;
+import com.smartcommerce.service.serviceInterface.ProductService;
+
+/**
+ * GraphQL Controller for Product operations
+ * Handles GraphQL queries and mutations for products
+ * Coexists with REST endpoints in ProductController
+ */
+@Controller
+public class ProductGraphQLController {
+
+    private final ProductService productService;
+
+    public ProductGraphQLController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    // ==================== QUERIES ====================
+
+    /**
+     * Get a single product by ID
+     * GraphQL Query: product(id: Int!): Product
+     */
+    @QueryMapping
+    public Product product(@Argument int id) {
+        return productService.getProductById(id);
+    }
+
+    /**
+     * Get all products with optional pagination and filters
+     * GraphQL Query: products(...): [Product!]!
+     */
+    @QueryMapping
+    public List<Product> products(
+            @Argument Integer pageNumber,
+            @Argument Integer pageSize,
+            @Argument String category,
+            @Argument Double minPrice,
+            @Argument Double maxPrice,
+            @Argument String searchTerm) {
+
+        // If pagination parameters provided, use filtered query
+        if (pageNumber != null || pageSize != null || category != null || 
+            minPrice != null || maxPrice != null || searchTerm != null) {
+            
+            int page = pageNumber != null ? pageNumber : 0;
+            int size = pageSize != null ? pageSize : 10;
+            
+            ProductFilterDTO filters = new ProductFilterDTO(
+                category,
+                minPrice != null ? BigDecimal.valueOf(minPrice) : null,
+                maxPrice != null ? BigDecimal.valueOf(maxPrice) : null,
+                searchTerm,
+                null  // inStock filter
+            );
+            
+            return productService.getProductsWithPaginationAndFilters(
+                page, size, "productId", "ASC", filters
+            );
+        }
+        
+        // Return all products if no filters
+        return productService.getAllProducts();
+    }
+
+    /**
+     * Search products by search term
+     * GraphQL Query: searchProducts(searchTerm: String!): [Product!]!
+     */
+    @QueryMapping
+    public List<Product> searchProducts(@Argument String searchTerm) {
+        return productService.searchProducts(searchTerm);
+    }
+
+    // ==================== MUTATIONS ====================
+
+    /**
+     * Create a new product
+     * GraphQL Mutation: createProduct(...): Product!
+     */
+    @MutationMapping
+    public Product createProduct(
+            @Argument String productName,
+            @Argument String description,
+            @Argument Double price,
+            @Argument int categoryId,
+            @Argument Integer quantityAvailable) {
+
+        Product product = new Product(
+            productName,
+            description,
+            BigDecimal.valueOf(price),
+            categoryId
+        );
+
+        if (quantityAvailable != null) {
+            product.setQuantityAvailable(quantityAvailable);
+        }
+
+        return productService.createProduct(product);
+    }
+
+    /**
+     * Update an existing product
+     * GraphQL Mutation: updateProduct(...): Product!
+     */
+    @MutationMapping
+    public Product updateProduct(
+            @Argument int id,
+            @Argument String productName,
+            @Argument String description,
+            @Argument Double price,
+            @Argument Integer categoryId) {
+
+        Product existingProduct = productService.getProductById(id);
+        
+        if (productName != null) {
+            existingProduct.setProductName(productName);
+        }
+        if (description != null) {
+            existingProduct.setDescription(description);
+        }
+        if (price != null) {
+            existingProduct.setPrice(BigDecimal.valueOf(price));
+        }
+        if (categoryId != null) {
+            existingProduct.setCategoryId(categoryId);
+        }
+
+        return productService.updateProduct(id, existingProduct);
+    }
+
+    /**
+     * Update product quantity
+     * GraphQL Mutation: updateProductQuantity(id: Int!, quantity: Int!): Product!
+     */
+    @MutationMapping
+    public Product updateProductQuantity(
+            @Argument int id,
+            @Argument int quantity) {
+        return productService.updateProductQuantity(id, quantity);
+    }
+
+    /**
+     * Delete a product
+     * GraphQL Mutation: deleteProduct(id: Int!): Boolean!
+     */
+    @MutationMapping
+    public boolean deleteProduct(@Argument int id) {
+        productService.deleteProduct(id);
+        return true;
+    }
+}

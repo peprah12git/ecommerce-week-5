@@ -1,0 +1,85 @@
+type Product {
+    productId: Int!
+    productName: String!
+    description: String
+    price: Float!
+    quantityAvailable: Int!
+    categoryId: Int!
+    categoryName: String
+    createdAt: String
+}
+#queries to fetch/retrieve data:
+type Category {
+    categoryId: Int!
+    categoryName: String!
+    description: String
+    createdAt: String
+}
+type User {
+    userId: Int!
+    name: String!
+    email: String!
+    createdAt: String
+}
+
+type Query {
+    # Get single product
+    product(id: Int!): Product
+
+    # Get all products with optional filters
+    products(
+        pageNumber: Int
+        pageSize: Int
+        category: String
+        minPrice: Float
+        maxPrice: Float
+        searchTerm: String
+    ): [Product!]!
+
+    # Get single category
+    category(id: Int!): Category
+
+    # Get all categories
+    categories: [Category!]!
+
+    # Search products
+    searchProducts(searchTerm: String!): [Product!]!
+}
+
+type Mutation {
+    # Product mutations
+    createProduct(
+        productName: String!
+        description: String
+        price: Float!
+        categoryId: Int!
+        quantityAvailable: Int
+    ): Product!
+
+    updateProduct(
+        id: Int!
+        productName: String
+        description: String
+        price: Float
+        categoryId: Int
+    ): Product!
+
+    updateProductQuantity(id: Int!, quantity: Int!): Product!
+
+    deleteProduct(id: Int!): Boolean!
+
+    # Category mutations
+    createCategory(
+        categoryName: String!
+        description: String
+    ): Category!
+
+    updateCategory(
+        id: Int!
+        categoryName: String
+        description: String
+    ): Category!
+
+    deleteCategory(id: Int!): Boolean!
+}
+

@@ -2,6 +2,7 @@ package com.smartcommerce.dao.implementation;
 
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.model.Product;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -13,6 +14,7 @@ import java.util.List;
  * Data Access Object for Products with in-memory caching
  * All logging is silent - no UI exposure
  */
+@Slf4j
 @Repository
 public class ProductDAO implements ProductDaoInterface {
     private DataSource dataSource;
@@ -161,25 +163,69 @@ public class ProductDAO implements ProductDaoInterface {
 
     @Override
     public boolean updateProduct(Product product) {
-        String sql = "UPDATE Products SET name = ?, description = ?, price = ?, category_id = ? WHERE product_id = ?";
+        String sql = "UPDATE Inventory SET quantity_available = ?, last_updated = CURRENT_TIMESTAMP WHERE product_id = ?";
+        log.debug("Preparing to update inventory for product_id={} with new quantity={}", product.getProductId(), product.getQuantityAvailable());
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+
+            pstmt.setInt(1, product.getQuantityAvailable());
+            pstmt.setInt(2, product.getProductId());
+
+
+            boolean updated = pstmt.executeUpdate() > 0;
+            log.debug("Inventory update result for product_id {}: {}", product.getProductId(), updated);
+
+            if (updated) {
+                log.debug("Invalidating inventory cache after update for product_id={}", product.getProductId());
+                invalidateCache(); // create this if you have a cache
+            }
+
+            return updated;
+
+        } catch (SQLException e) {
+            log.error("Error updating inventory for product_id {}: {}", product.getProductId(), e.getMessage(), e);
+        }
+
+        return false;
+    }
+
+
+    /*@Override
+    public boolean updateProduct(Product product) {
+        String sql = "UPDATE Products SET name = ?, description = ?, price = ?, category_id = ?, quantity_available = ? WHERE product_id = ?";
+        log.debug("Preparing to update product: {}", product);
         try (Connection connection = dataSource.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, product.getProductName());
             pstmt.setString(2, product.getDescription());
             pstmt.setBigDecimal(3, product.getPrice());
             pstmt.setInt(4, product.getCategoryId());
-            pstmt.setInt(5, product.getProductId());
+            pstmt.setInt(5, product.getQuantityAvailable());
+            pstmt.setInt(6, product.getProductId());
+            log.debug("Executing SQL: {} with values [name={}, description={}, price={}, category_id={}, quantity_available={}, product_id={}]",
+                    sql,
+                    product.getProductName(),
+                    product.getDescription(),
+                    product.getPrice(),
+                    product.getCategoryId(),
+                    product.getQuantityAvailable(),
+                    product.getProductId());
+
             boolean updated = pstmt.executeUpdate() > 0;
+            log.debug("Update result: {}", updated);
             if (updated) {
+                log.debug("Invalidating cache after update");
                 invalidateCache();
             }
             return updated;
         } catch (SQLException e) {
             // Silent
+            log.error("Error updating product with id {}: {}", product.getProductId(), e.getMessage(), e);
         }
         return false;
     }
-
+*/
     @Override
     public boolean deleteProduct(int id) {
         String sql = "DELETE FROM Products WHERE product_id = ?";

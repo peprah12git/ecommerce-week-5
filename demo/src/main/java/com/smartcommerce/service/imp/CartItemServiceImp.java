@@ -88,6 +88,7 @@ public class CartItemServiceImp implements CartItemService {
      * Retrieves all cart items for a user (basic info)
      */
     @Override
+    @Transactional(readOnly = true)
     public List<CartItem> getCartItemsByUserId(int userId) {
         // Validate user exists
         User user = userDao.getUserById(userId);
@@ -102,6 +103,7 @@ public class CartItemServiceImp implements CartItemService {
      * Retrieves all cart items for a user with product details
      */
     @Override
+    @Transactional(readOnly = true)
     public List<CartItem> getCartItemsWithDetails(int userId) {
         // Validate user exists
         User user = userDao.getUserById(userId);
@@ -116,6 +118,7 @@ public class CartItemServiceImp implements CartItemService {
      * Gets a specific cart item
      */
     @Override
+    @Transactional(readOnly = true)
     public CartItem getCartItem(int userId, int productId) {
         CartItem cartItem = cartItemDao.getCartItem(userId, productId);
         if (cartItem == null) {
@@ -197,6 +200,7 @@ public class CartItemServiceImp implements CartItemService {
      * Gets the count of items in a user's cart
      */
     @Override
+    @Transactional(readOnly = true)
     public int getCartItemCount(int userId) {
         // Validate user exists
         User user = userDao.getUserById(userId);
@@ -211,6 +215,7 @@ public class CartItemServiceImp implements CartItemService {
      * Calculates the total value of a user's cart
      */
     @Override
+    @Transactional(readOnly = true)
     public BigDecimal getCartTotal(int userId) {
         // Validate user exists
         User user = userDao.getUserById(userId);

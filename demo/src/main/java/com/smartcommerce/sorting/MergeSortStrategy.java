@@ -1,23 +1,24 @@
 package com.smartcommerce.sorting;
 
-import com.smartcommerce.utils.PerformanceMonitor;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
+import com.smartcommerce.utils.PerformanceMonitor;
+
 /**
  * Merge Sort implementation of the SortStrategy interface.
- * <p>
+ * 
  * Time Complexity: O(n log n) in all cases
  * Space Complexity: O(n) for auxiliary arrays
- * <p>
+ * 
  * Merge sort is a stable, divide-and-conquer sorting algorithm that:
  * - Divides the input array into two halves
  * - Recursively sorts each half
  * - Merges the sorted halves to produce the final result
- *
+ * 
  * @param <T> the type of elements to be sorted
  */
 @Component
@@ -28,7 +29,7 @@ public class MergeSortStrategy<T> implements SortStrategy<T> {
     @Override
     public List<T> sort(List<T> items, Comparator<T> comparator) {
         long startTime = performanceMonitor.startTimer();
-
+        
         if (items == null || items.size() <= 1) {
             List<T> result = items == null ? new ArrayList<>() : new ArrayList<>(items);
             performanceMonitor.recordQueryTime("MergeSort", startTime);
@@ -37,7 +38,7 @@ public class MergeSortStrategy<T> implements SortStrategy<T> {
 
         List<T> result = new ArrayList<>(items);
         mergeSort(result, 0, result.size() - 1, comparator);
-
+        
         performanceMonitor.recordQueryTime("MergeSort", startTime);
         return result;
     }

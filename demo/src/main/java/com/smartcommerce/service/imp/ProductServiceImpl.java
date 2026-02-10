@@ -16,6 +16,7 @@ import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.Category;
 import com.smartcommerce.model.Product;
 import com.smartcommerce.service.serviceInterface.ProductService;
+import com.smartcommerce.sorting.SortStrategy;
 
 /**
  * Service implementation for Product entity
@@ -27,11 +28,15 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductDaoInterface productDao;
     private final CategoryDaoInterface categoryDao;
+    private final SortStrategy<Product> sortStrategy;
 
-    // Manual constructor for compatibility
-    public ProductServiceImpl(ProductDaoInterface productDao, CategoryDaoInterface categoryDao) {
+    // Manual constructor for dependency injection
+    public ProductServiceImpl(ProductDaoInterface productDao, 
+                              CategoryDaoInterface categoryDao,
+                              SortStrategy<Product> sortStrategy) {
         this.productDao = productDao;
         this.categoryDao = categoryDao;
+        this.sortStrategy = sortStrategy;
     }
 
     @Override
@@ -189,7 +194,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * Apply sorting to product list
+     * Apply sorting to product list using the injected sort strategy (Merge Sort)
      */
     private List<Product> applySorting(List<Product> products, String sortBy, String sortDirection) {
         if (sortBy == null || sortBy.trim().isEmpty()) {
@@ -206,9 +211,8 @@ public class ProductServiceImpl implements ProductService {
             comparator = comparator.reversed();
         }
 
-        return products.stream()
-                .sorted(comparator)
-                .collect(Collectors.toList());
+        // Use the injected sort strategy (Merge Sort) for sorting
+        return sortStrategy.sort(products, comparator);
     }
 
     /**

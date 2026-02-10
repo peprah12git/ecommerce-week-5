@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Strategy interface for sorting algorithms.
  * Allows different sorting implementations to be plugged in.
- *
+ * 
  * @param <T> the type of elements to be sorted
  */
 public interface SortStrategy<T> {

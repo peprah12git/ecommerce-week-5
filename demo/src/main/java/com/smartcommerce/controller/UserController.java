@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
+// REST Controller for User management
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "Users", description = "User management API — registration and account operations")
@@ -44,6 +44,7 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "Email already exists",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
+    // Endpoint to register a new user
     @PostMapping
     public ResponseEntity<UserResponse> addUser(
             @Valid @RequestBody CreateUserDTO createUserDTO
@@ -57,7 +58,7 @@ public class UserController {
         );
         User user = userService.createUser(userToCreate);
         UserResponse response = UserMapper.toUserResponse(user);
-
+//       return ResponseEntity.status(HttpStatus.CREATED).body(response);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);

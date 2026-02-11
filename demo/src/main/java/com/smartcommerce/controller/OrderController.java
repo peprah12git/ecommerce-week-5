@@ -239,4 +239,27 @@ public class OrderController {
         List<OrderItemResponse> response = OrderMapper.toOrderItemResponseList(items);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * Checkout from cart
+     * POST /api/orders/checkout/{userId}
+     */
+    @Operation(summary = "Checkout from cart", description = "Creates an order from user's cart items, validates stock, deducts inventory, and clears cart")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Order created successfully from cart",
+                    content = @Content(schema = @Schema(implementation = OrderResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Cart is empty or insufficient stock",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/checkout/{userId}")
+    public ResponseEntity<OrderResponse> checkoutFromCart(
+            @Parameter(description = "User ID", required = true, example = "1")
+            @PathVariable int userId) {
+
+        Order order = orderService.checkoutFromCart(userId);
+        OrderResponse response = OrderMapper.toOrderResponse(order);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 }

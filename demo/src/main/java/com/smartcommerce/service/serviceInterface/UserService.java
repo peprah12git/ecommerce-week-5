@@ -1,11 +1,12 @@
 package com.smartcommerce.service.serviceInterface;
 
+import java.util.List;
+
+import com.smartcommerce.dtos.response.LoginResponse;
 import com.smartcommerce.exception.BusinessException;
 import com.smartcommerce.exception.DuplicateResourceException;
 import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.User;
-
-import java.util.List;
 
 /**
  * Service interface for User entity
@@ -48,6 +49,17 @@ public interface UserService {
      * @throws BusinessException         if email is invalid
      */
     User getUserByEmail(String email);
+
+    /**
+     * Authenticates a user with email and password
+     *
+     * @param email    User's email
+     * @param password User's password
+     * @return LoginResponse with token and user info
+     * @throws ResourceNotFoundException if user not found
+     * @throws BusinessException         if credentials are invalid
+     */
+    LoginResponse login(String email, String password);
 
     /**
      * Updates an existing user

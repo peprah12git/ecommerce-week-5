@@ -16,12 +16,10 @@ const OrdersAdmin = () => {
   const { showNotification } = useApp();
 
   const statusOptions = [
-    { value: 'pending', label: 'Pending', color: '#f59e0b' },
     { value: 'confirmed', label: 'Confirmed', color: '#3b82f6' },
     { value: 'processing', label: 'Processing', color: '#8b5cf6' },
     { value: 'shipped', label: 'Shipped', color: '#10b981' },
     { value: 'delivered', label: 'Delivered', color: '#059669' },
-    { value: 'cancelled', label: 'Cancelled', color: '#ef4444' },
   ];
 
   useEffect(() => {
@@ -98,8 +96,15 @@ const OrdersAdmin = () => {
   };
 
   const getStatusColor = (status) => {
-    const option = statusOptions.find(s => s.value === status);
-    return option ? option.color : '#666';
+    const statusColors = {
+      confirmed: '#3b82f6',
+      processing: '#8b5cf6',
+      shipped: '#10b981',
+      delivered: '#059669',
+      cancelled: '#ef4444',
+      pending: '#f59e0b'
+    };
+    return statusColors[status] || '#666';
   };
 
   return (

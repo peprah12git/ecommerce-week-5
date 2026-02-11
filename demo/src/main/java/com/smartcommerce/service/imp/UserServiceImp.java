@@ -1,16 +1,21 @@
 package com.smartcommerce.service.imp;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.smartcommerce.dao.interfaces.UserDaoInterface;
+import com.smartcommerce.dtos.response.LoginResponse;
+import com.smartcommerce.dtos.response.UserResponse;
 import com.smartcommerce.exception.BusinessException;
 import com.smartcommerce.exception.DuplicateResourceException;
 import com.smartcommerce.exception.ResourceNotFoundException;
 import com.smartcommerce.model.User;
 import com.smartcommerce.service.serviceInterface.UserService;
+import com.smartcommerce.utils.UserMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service layer for User entity
@@ -45,6 +50,10 @@ public class UserServiceImp implements UserService {
         if (user.getRole() == null || user.getRole().trim().isEmpty()) {
             user.setRole("CUSTOMER");
         }
+
+        // Hash the password before saving
+        String hashedPassword = BCrypt.withDefaults().hashToString(12, user.getPassword().toCharArray());
+        user.setPassword(hashedPassword);
 
         // Add user
         boolean success = userDao.addUser(user);
@@ -143,7 +152,9 @@ public class UserServiceImp implements UserService {
 
         // Update password only if provided
         if (userDetails.getPassword() != null && !userDetails.getPassword().trim().isEmpty()) {
-            existingUser.setPassword(userDetails.getPassword());
+            // Hash the new password before updating
+            String hashedPassword = BCrypt.withDefaults().hashToString(12, userDetails.getPassword().toCharArray());
+            existingUser.setPassword(hashedPassword);
         }
 
         // Update role only if provided
@@ -222,5 +233,69 @@ public class UserServiceImp implements UserService {
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         return email.matches(emailRegex);
+    }
+
+    /**
+     * Authenticates a user with email and password
+     *
+     * @param email    User's email
+     * @param password User's password
+     * @return LoginResponse with token and user info
+     * @throws ResourceNotFoundException if user not found
+     * @throws BusinessException         if credentials are invalid
+     */
+    @Override
+    @Transactional  // Removed readOnly to allow password updates during migration
+    public LoginResponse login(String email, String password) {
+
+        if (email == null || email.trim().isEmpty()) {
+            throw new BusinessException("Email is required");
+        }
+
+        if (password == null || password.trim().isEmpty()) {
+            throw new BusinessException("Password is required");
+        }
+
+        User user = userDao.getUserByEmail(email.trim().toLowerCase());
+        if (user == null) {
+            throw new ResourceNotFoundException("User", "email", email);
+        }
+
+        // Check if password is already BCrypt hashed (starts with $2a$, $2b$, or $2y$)
+        boolean isPasswordHashed = user.getPassword().startsWith("$2");
+
+        if (isPasswordHashed) {
+            // Try BCrypt verification for hashed passwords
+            BCrypt.Result result = BCrypt.verifyer()
+                    .verify(password.toCharArray(), user.getPassword());
+
+            if (!result.verified) {
+                throw new BusinessException("Invalid credentials");
+            }
+        } else {
+            // Fallback for plain text passwords (existing users)
+            if (!password.equals(user.getPassword())) {
+                throw new BusinessException("Invalid credentials");
+            }
+
+            // Migrate plain text password to BCrypt hash for future security
+            String hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray());
+            user.setPassword(hashedPassword);
+            userDao.updateUser(user);  // Update the password in database
+        }
+
+        String token = generateToken(user);
+        UserResponse userResponse = UserMapper.toUserResponse(user);
+
+        return new LoginResponse(token, userResponse);
+    }
+
+
+    /**
+     * Generates a simple authentication token
+     * In production, use proper JWT implementation
+     */
+    private String generateToken(User user) {
+        return UUID.randomUUID().toString() + "-" + user.getUserId();
     }
 }

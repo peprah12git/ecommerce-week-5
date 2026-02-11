@@ -10,15 +10,14 @@ import './Cart.css';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { showNotification } = useApp();
+  const { showNotification, user } = useApp();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [checkoutModal, setCheckoutModal] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
 
-  // For demo purposes, using a fixed user ID. In production, get from auth context
-  const userId = 1;
+  const userId = user?.userId || user?.user_id;
 
   useEffect(() => {
     fetchCart();
@@ -82,20 +81,17 @@ const Cart = () => {
   };
 
   const handleCheckout = async () => {
+    if (!user) {
+      showNotification('Please sign in to proceed to checkout', 'error');
+      navigate('/login');
+      return;
+    }
     setCheckingOut(true);
     try {
-      const orderData = {
-        userId,
-        items: cart.items.map(item => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
-      };
-      
-      const order = await OrderService.createOrder(orderData);
-      await CartService.clearCart(userId);
+      const order = await OrderService.checkoutFromCart(userId);
       setCheckoutModal(false);
       showNotification('Order placed successfully!', 'success');
+      await fetchCart();
       navigate(`/orders/${order.orderId}`);
     } catch (error) {
       console.error('Failed to checkout:', error);
@@ -213,7 +209,14 @@ const Cart = () => {
               </div>
               <button
                 className="btn btn-primary btn-block"
-                onClick={() => setCheckoutModal(true)}
+                onClick={() => {
+                  if (!user) {
+                    showNotification('Please sign in to proceed to checkout', 'error');
+                    navigate('/login');
+                  } else {
+                    setCheckoutModal(true);
+                  }
+                }}
                 disabled={updating}
               >
                 Proceed to Checkout

@@ -1,5 +1,6 @@
-import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useApp } from '../../../context/AppContext';
 import {
   LayoutDashboard,
   Package,
@@ -10,11 +11,35 @@ import {
   Menu,
   ClipboardList,
   Warehouse,
+  LogOut,
 } from 'lucide-react';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, showNotification } = useApp();
+
+  useEffect(() => {
+    const adminUser = localStorage.getItem('adminUser');
+    if (!adminUser) {
+      navigate('/admin/login');
+      return;
+    }
+    
+    try {
+      const parsedUser = JSON.parse(adminUser);
+      if (parsedUser.role !== 'ADMIN') {
+        localStorage.removeItem('adminUser');
+        localStorage.removeItem('adminToken');
+        navigate('/admin/login');
+      }
+    } catch (error) {
+      localStorage.removeItem('adminUser');
+      localStorage.removeItem('adminToken');
+      navigate('/admin/login');
+    }
+  }, [navigate]);
 
   const navItems = [
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -29,6 +54,15 @@ const AdminLayout = () => {
       return location.pathname === path;
     }
     return location.pathname.startsWith(path);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    showNotification('Successfully logged out', 'info');
+    navigate('/login');
   };
 
   return (
@@ -55,10 +89,10 @@ const AdminLayout = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <Link to="/" className="back-to-store">
-            <ArrowLeft size={18} />
-            <span>Back to Store</span>
-          </Link>
+          <button onClick={handleLogout} className="logout-btn">
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 

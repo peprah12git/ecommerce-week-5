@@ -47,6 +47,12 @@ const OrderService = {
     const response = await api.get(`/orders/${orderId}/items`);
     return response.data;
   },
+
+  // Checkout from cart
+  checkoutFromCart: async (userId) => {
+    const response = await api.post(`/orders/checkout/${userId}`);
+    return response.data;
+  },
 };
 
 export default OrderService;

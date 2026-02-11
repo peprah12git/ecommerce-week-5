@@ -1,17 +1,26 @@
 package com.smartcommerce.dao.implementation;
 
-import com.smartcommerce.dao.interfaces.InventoryDaoInterface;
-import com.smartcommerce.model.Inventory;
-
-import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InventoryDAO implements InventoryDaoInterface {
-    private DataSource dataSource;
+import javax.sql.DataSource;
 
-    // Constructor should accept DataSource as dependency injection
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.smartcommerce.dao.interfaces.InventoryDaoInterface;
+import com.smartcommerce.model.Inventory;
+
+@Repository
+public class InventoryDAO implements InventoryDaoInterface {
+    private final DataSource dataSource;
+
+    @Autowired
     public InventoryDAO(DataSource dataSource) {
         this.dataSource = dataSource;
     }

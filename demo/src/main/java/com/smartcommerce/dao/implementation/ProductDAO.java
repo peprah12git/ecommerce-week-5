@@ -2,40 +2,57 @@ package com.smartcommerce.dao.implementation;
 
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
 import com.smartcommerce.model.Product;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Data Access Object for Products with in-memory caching
  * All logging is silent - no UI exposure
  */
+@Slf4j
 @Repository
 public class ProductDAO implements ProductDaoInterface {
     private DataSource dataSource;
-
-    private static List<Product> productCache = null;
-    private static long cacheTimestamp = 0;
-    private static final long CACHE_TTL_MS = 300000;
-    private static int cacheHits = 0;
-    private static int cacheMisses = 0;
 
     public ProductDAO(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
+    private static Map<Integer, Product> productCache = null;
+    private static long cacheTimestamp = 0;
+    private static final long CACHE_TTL_MS = 300000;
+    private static int cacheHits = 0;
+    private static int cacheMisses = 0;
+
     private boolean isCacheValid() {
-        return productCache != null &&
-                (System.currentTimeMillis() - cacheTimestamp) < CACHE_TTL_MS;
+
+        if (productCache == null) {
+            return false;
+        }
+
+        long currentTime = System.currentTimeMillis();
+        long timeDifference = currentTime - cacheTimestamp;
+
+        return timeDifference < CACHE_TTL_MS;
     }
 
+
     public void invalidateCache() {
-        productCache = null;
+
+        // Step 1: Clear the cached products (romves it from memory)
+        if (productCache != null) {
+            productCache = null;
+        }
+
+        // Step 2: Reset the cache timestamp
         cacheTimestamp = 0;
     }
+
 
     public static String getCacheStats() {
         int total = cacheHits + cacheMisses;
@@ -108,7 +125,7 @@ public class ProductDAO implements ProductDaoInterface {
     public List<Product> getAllProducts() {
         if (isCacheValid()) {
             cacheHits++;
-            return new ArrayList<>(productCache);
+            return new ArrayList<>(productCache.values());
         }
 
         cacheMisses++;
@@ -127,7 +144,8 @@ public class ProductDAO implements ProductDaoInterface {
                 products.add(extractProduct(rs));
             }
 
-            productCache = new ArrayList<>(products);
+            productCache = products.stream()
+                    .collect(Collectors.toMap(Product::getProductId, p -> p));
             cacheTimestamp = System.currentTimeMillis();
 
         } catch (SQLException e) {
@@ -139,6 +157,12 @@ public class ProductDAO implements ProductDaoInterface {
 
     @Override
     public Product getProductById(int id) {
+        if (isCacheValid() && productCache.containsKey(id)) {
+            cacheHits++;
+            return productCache.get(id);
+        }
+
+        cacheMisses++;
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
                 "LEFT JOIN Categories c ON p.category_id = c.category_id " +
@@ -159,24 +183,33 @@ public class ProductDAO implements ProductDaoInterface {
         return null;
     }
 
+    // -----------------------updates the inventory only-------------
     @Override
     public boolean updateProduct(Product product) {
-        String sql = "UPDATE Products SET name = ?, description = ?, price = ?, category_id = ? WHERE product_id = ?";
+        String sql = "UPDATE Inventory SET quantity_available = ?, last_updated = CURRENT_TIMESTAMP WHERE product_id = ?";
+        log.debug("Preparing to update inventory for product_id={} with new quantity={}", product.getProductId(), product.getQuantityAvailable());
+
         try (Connection connection = dataSource.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, product.getProductName());
-            pstmt.setString(2, product.getDescription());
-            pstmt.setBigDecimal(3, product.getPrice());
-            pstmt.setInt(4, product.getCategoryId());
-            pstmt.setInt(5, product.getProductId());
+
+            pstmt.setInt(1, product.getQuantityAvailable());
+            pstmt.setInt(2, product.getProductId());
+
+
             boolean updated = pstmt.executeUpdate() > 0;
+            log.debug("Inventory update result for product_id {}: {}", product.getProductId(), updated);
+            // if update was successful invalidate cache
             if (updated) {
-                invalidateCache();
+                log.debug("Invalidating inventory cache after update for product_id={}", product.getProductId());
+                invalidateCache(); // clear cache so next read fetch fresh data
             }
+            // returns whether the update was successful
             return updated;
+
         } catch (SQLException e) {
-            // Silent
+            log.error("Error updating inventory for product_id {}: {}", product.getProductId(), e.getMessage(), e);
         }
+
         return false;
     }
 
@@ -215,7 +248,7 @@ public class ProductDAO implements ProductDaoInterface {
                 products.add(extractProduct(rs));
             }
         } catch (SQLException e) {
-            // Silent
+            System.out.println(e.getMessage());
         }
 
         return products;

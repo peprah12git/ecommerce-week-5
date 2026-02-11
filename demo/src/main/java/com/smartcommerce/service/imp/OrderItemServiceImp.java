@@ -1,12 +1,5 @@
 package com.smartcommerce.service.imp;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.smartcommerce.dao.interfaces.OrderDaoInterface;
 import com.smartcommerce.dao.interfaces.OrderItemDaoInterface;
 import com.smartcommerce.dao.interfaces.ProductDaoInterface;
@@ -16,6 +9,12 @@ import com.smartcommerce.model.Order;
 import com.smartcommerce.model.OrderItem;
 import com.smartcommerce.model.Product;
 import com.smartcommerce.service.serviceInterface.OrderItemService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Service layer for OrderItem entity

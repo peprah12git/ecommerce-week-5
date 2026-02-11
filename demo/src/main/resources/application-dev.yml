@@ -5,9 +5,28 @@ spring:
     password: noah_1@23.Djanor
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 5
-      connection-timeout: 20000
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+      validation-timeout: 5000
+      keepalive-time: 30000
+      max-lifetime: 1800000
+      idle-timeout: 600000
 
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+    path: /graphql
+    schema:
+      printer:
+        enabled: true
+
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG  # Shows connection pool activity
+    com.smartcommerce: DEBUG
+    org.springframework.jdbc.core: DEBUG
 #logging:
 #  level:
 #    com.ecommerce: DEBUG

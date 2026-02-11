@@ -15,6 +15,11 @@ export const AppProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
+  const [user, setUser] = useState(() => {
+    // Initialize user from localStorage if exists
+    const savedUser = localStorage.getItem('adminUser');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   useEffect(() => {
     fetchCategories();
@@ -36,6 +41,12 @@ export const AppProvider = ({ children }) => {
     setTimeout(() => setNotification(null), 5000);
   };
 
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+  };
+
   const value = {
     categories,
     setCategories,
@@ -43,6 +54,9 @@ export const AppProvider = ({ children }) => {
     notification,
     showNotification,
     refreshCategories: fetchCategories,
+    user,
+    setUser,
+    logout,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

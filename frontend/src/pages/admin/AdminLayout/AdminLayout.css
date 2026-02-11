@@ -63,6 +63,27 @@
   border-top: 1px solid #374151;
 }
 
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.logout-btn:hover {
+  background: #374151;
+  color: white;
+}
+
 .back-to-store {
   display: flex;
   align-items: center;

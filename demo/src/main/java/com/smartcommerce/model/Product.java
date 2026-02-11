@@ -13,7 +13,8 @@ public class Product {
     private Timestamp createdAt;
     private int quantityAvailable;
 
-    public Product() {}
+    public Product() {
+    }
 
     public Product(String productName, String description, BigDecimal price, int categoryId) {
         this.productName = productName;
@@ -22,29 +23,69 @@ public class Product {
         this.categoryId = categoryId;
     }
 
-    public int getProductId() { return productId; }
-    public void setProductId(int productId) { this.productId = productId; }
+    public int getProductId() {
+        return productId;
+    }
 
-    public String getProductName() { return productName; }
-    public void setProductName(String productName) { this.productName = productName; }
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getProductName() {
+        return productName;
+    }
 
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
 
-    public int getCategoryId() { return categoryId; }
-    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
+    public String getDescription() {
+        return description;
+    }
 
-    public String getCategoryName() { return categoryName; }
-    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-    public int getQuantityAvailable() { return quantityAvailable; }
-    public void setQuantityAvailable(int quantityAvailable) { this.quantityAvailable = quantityAvailable; }
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public int getQuantityAvailable() {
+        return quantityAvailable;
+    }
+
+    public void setQuantityAvailable(int quantityAvailable) {
+        this.quantityAvailable = this.quantityAvailable + quantityAvailable;
+    }
 
     // For AdminDashboardController compatibility
     public int getQuantity() {

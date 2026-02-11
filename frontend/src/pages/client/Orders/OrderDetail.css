@@ -1,0 +1,301 @@
+.order-detail-page {
+  padding: 2rem 0;
+  min-height: 80vh;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: #4299e1;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+}
+
+.back-btn:hover {
+  color: #2b6cb0;
+}
+
+.order-detail-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.order-header h1 {
+  font-size: 1.75rem;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.order-date {
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+.order-status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.order-status-badge.confirmed {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.order-status-badge.processing {
+  background: #feebc8;
+  color: #7c2d12;
+}
+
+.order-status-badge.shipped {
+  background: #bee3f8;
+  color: #2c5282;
+}
+
+.order-status-badge.delivered {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.order-status-badge.cancelled {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.order-tracking {
+  padding: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.order-tracking h2 {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  color: #1a202c;
+}
+
+.tracking-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+}
+
+.tracking-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.step-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  color: #a0aec0;
+  margin-bottom: 0.75rem;
+  z-index: 2;
+}
+
+.tracking-step.completed .step-icon {
+  background: #48bb78;
+  color: white;
+}
+
+.tracking-step.active .step-icon {
+  background: #4299e1;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #718096;
+  text-align: center;
+}
+
+.tracking-step.completed .step-label,
+.tracking-step.active .step-label {
+  color: #1a202c;
+}
+
+.step-line {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.tracking-step.completed .step-line {
+  background: #48bb78;
+}
+
+.cancelled-notice {
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cancelled-notice svg {
+  color: #f56565;
+  margin-bottom: 1rem;
+}
+
+.cancelled-notice h3 {
+  color: #742a2a;
+  font-size: 1.25rem;
+}
+
+.order-items-section {
+  padding: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.order-items-section h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: #1a202c;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.order-item-detail {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.item-image {
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e0;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-info h3 {
+  font-size: 1rem;
+  color: #1a202c;
+  margin-bottom: 0.25rem;
+}
+
+.item-info p {
+  color: #718096;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.item-price {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.item-total {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.order-summary {
+  padding: 2rem;
+}
+
+.order-summary h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: #1a202c;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  color: #4a5568;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-top: 2px solid #e2e8f0;
+  margin-top: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.summary-total strong {
+  color: #1a202c;
+}
+
+.not-found {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.not-found svg {
+  color: #cbd5e0;
+  margin-bottom: 1rem;
+}
+
+.not-found h2 {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: #2d3748;
+}
+
+@media (max-width: 768px) {
+  .order-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .tracking-steps {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .step-line {
+    display: none;
+  }
+
+  .order-item-detail {
+    flex-direction: column;
+    text-align: center;
+  }
+}

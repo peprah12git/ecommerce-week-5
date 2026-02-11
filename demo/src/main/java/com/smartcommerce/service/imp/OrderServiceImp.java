@@ -17,6 +17,7 @@ import com.smartcommerce.model.Order;
 import com.smartcommerce.model.OrderItem;
 import com.smartcommerce.model.Product;
 import com.smartcommerce.model.User;
+import com.smartcommerce.service.serviceInterface.InventoryServiceInterface;
 import com.smartcommerce.service.serviceInterface.OrderService;
 
 /**
@@ -31,6 +32,8 @@ public class OrderServiceImp implements OrderService {
     private final OrderItemDaoInterface orderItemDao;
     private final UserDaoInterface userDao;
     private final ProductDaoInterface productDao;
+    private final InventoryServiceInterface inventoryService;
+    private final com.smartcommerce.service.serviceInterface.CartItemService cartItemService;
 
     // Valid order statuses
     private static final List<String> VALID_STATUSES = List.of(
@@ -41,11 +44,15 @@ public class OrderServiceImp implements OrderService {
     public OrderServiceImp(OrderDaoInterface orderDao,
                            OrderItemDaoInterface orderItemDao,
                            UserDaoInterface userDao,
-                           ProductDaoInterface productDao) {
+                           ProductDaoInterface productDao,
+                           InventoryServiceInterface inventoryService,
+                           com.smartcommerce.service.serviceInterface.CartItemService cartItemService) {
         this.orderDao = orderDao;
         this.orderItemDao = orderItemDao;
         this.userDao = userDao;
         this.productDao = productDao;
+        this.inventoryService = inventoryService;
+        this.cartItemService = cartItemService;
     }
 
     @Override
@@ -103,6 +110,15 @@ public class OrderServiceImp implements OrderService {
             boolean itemCreated = orderItemDao.addOrderItem(item);
             if (!itemCreated) {
                 throw new BusinessException("Failed to add order item for product ID: " + item.getProductId());
+            }
+        }
+
+        // Reduce inventory for ordered items
+        for (OrderItem item : orderItems) {
+            boolean stockReduced = inventoryService.reduceStock(item.getProductId(), item.getQuantity());
+            if (!stockReduced) {
+                throw new BusinessException("Failed to reduce stock for product ID: " + item.getProductId() + 
+                        ". Order creation failed.");
             }
         }
 
@@ -205,10 +221,23 @@ public class OrderServiceImp implements OrderService {
             throw new BusinessException("Order is already cancelled");
         }
 
+        // Get order items to restore inventory
+        List<OrderItem> orderItems = orderItemDao.getOrderItemsByOrderId(orderId);
+
         // Update status to cancelled
         boolean updated = orderDao.updateOrderStatus(orderId, "cancelled");
         if (!updated) {
             throw new BusinessException("Failed to cancel order");
+        }
+
+        // Restore inventory for cancelled order items
+        for (OrderItem item : orderItems) {
+            boolean stockRestored = inventoryService.addStock(item.getProductId(), item.getQuantity());
+            if (!stockRestored) {
+                // Log warning but don't fail the cancellation
+                System.err.println("Warning: Failed to restore stock for product ID: " + item.getProductId() + 
+                        " during order cancellation");
+            }
         }
 
         // Return updated order
@@ -247,5 +276,76 @@ public class OrderServiceImp implements OrderService {
 
         return orderItemDao.getOrderItemsByOrderId(orderId);
     }
-}
 
+    @Override
+    public Order checkoutFromCart(int userId) {
+        // Validate user exists
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User", "id", userId);
+        }
+
+        // Fetch cart items with product details
+        List<com.smartcommerce.model.CartItem> cartItems = cartItemService.getCartItemsWithDetails(userId);
+        if (cartItems == null || cartItems.isEmpty()) {
+            throw new BusinessException("Cart is empty");
+        }
+
+        // Validate stock and calculate total
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (com.smartcommerce.model.CartItem cartItem : cartItems) {
+            Product product = productDao.getProductById(cartItem.getProductId());
+            if (product == null) {
+                throw new ResourceNotFoundException("Product", "id", cartItem.getProductId());
+            }
+
+            if (product.getQuantityAvailable() < cartItem.getQuantity()) {
+                throw new BusinessException("Insufficient stock for product: " + product.getProductName() +
+                        ". Available: " + product.getQuantityAvailable() + ", Requested: " + cartItem.getQuantity());
+            }
+
+            BigDecimal subtotal = product.getPrice().multiply(new BigDecimal(cartItem.getQuantity()));
+            totalAmount = totalAmount.add(subtotal);
+        }
+
+        // Create Order with CONFIRMED status
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setStatus("confirmed");
+        order.setTotalAmount(totalAmount);
+
+        boolean orderCreated = orderDao.addOrder(order);
+        if (!orderCreated) {
+            throw new BusinessException("Failed to create order");
+        }
+
+        // Create OrderItems and deduct inventory
+        for (com.smartcommerce.model.CartItem cartItem : cartItems) {
+            Product product = productDao.getProductById(cartItem.getProductId());
+            
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrderId(order.getOrderId());
+            orderItem.setProductId(cartItem.getProductId());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setUnitPrice(product.getPrice());
+
+            boolean itemCreated = orderItemDao.addOrderItem(orderItem);
+            if (!itemCreated) {
+                throw new BusinessException("Failed to add order item for product ID: " + cartItem.getProductId());
+            }
+
+            boolean stockReduced = inventoryService.reduceStock(cartItem.getProductId(), cartItem.getQuantity());
+            if (!stockReduced) {
+                throw new BusinessException("Failed to reduce stock for product ID: " + cartItem.getProductId());
+            }
+        }
+
+        // Clear cart
+        cartItemService.clearCart(userId);
+
+        // Return order with items
+        order.setUserName(user.getName());
+        order.setOrderItems(orderItemDao.getOrderItemsByOrderId(order.getOrderId()));
+        return order;
+    }
+}

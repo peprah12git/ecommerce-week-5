@@ -1,11 +1,4 @@
-package com.smartcommerce.controller;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+package com.smartcommerce.controller.restControllers;
 
 import com.smartcommerce.dtos.request.CreateUserDTO;
 import com.smartcommerce.dtos.request.LoginDTO;
@@ -16,7 +9,6 @@ import com.smartcommerce.exception.ValidationErrorResponse;
 import com.smartcommerce.model.User;
 import com.smartcommerce.service.serviceInterface.UserService;
 import com.smartcommerce.utils.UserMapper;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,6 +16,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 // REST Controller for User management
 @RestController
 @RequestMapping("/api/users")

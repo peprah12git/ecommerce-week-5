@@ -25,19 +25,30 @@ public class ProductDAO implements ProductDaoInterface {
     private static int cacheHits = 0;
     private static int cacheMisses = 0;
 
-    public ProductDAO(DataSource dataSource) {
-        this.dataSource = dataSource;
+    private boolean isCacheValid() {
+
+        if (productCache == null) {
+            return false;
+        }
+
+        long currentTime = System.currentTimeMillis();
+        long timeDifference = currentTime - cacheTimestamp;
+
+        return timeDifference < CACHE_TTL_MS;
     }
 
-    private boolean isCacheValid() {
-        return productCache != null &&
-                (System.currentTimeMillis() - cacheTimestamp) < CACHE_TTL_MS;
-    }
 
     public void invalidateCache() {
-        productCache = null;
+
+        // Step 1: Clear the cached products (romves it from memory)
+        if (productCache != null) {
+            productCache = null;
+        }
+
+        // Step 2: Reset the cache timestamp
         cacheTimestamp = 0;
     }
+
 
     public static String getCacheStats() {
         int total = cacheHits + cacheMisses;
@@ -161,6 +172,7 @@ public class ProductDAO implements ProductDaoInterface {
         return null;
     }
 
+    // -----------------------updates the inventory only-------------
     @Override
     public boolean updateProduct(Product product) {
         String sql = "UPDATE Inventory SET quantity_available = ?, last_updated = CURRENT_TIMESTAMP WHERE product_id = ?";
@@ -175,12 +187,12 @@ public class ProductDAO implements ProductDaoInterface {
 
             boolean updated = pstmt.executeUpdate() > 0;
             log.debug("Inventory update result for product_id {}: {}", product.getProductId(), updated);
-
+            // if update was successful invalidate cache
             if (updated) {
                 log.debug("Invalidating inventory cache after update for product_id={}", product.getProductId());
-                invalidateCache(); // create this if you have a cache
+                invalidateCache(); // clear cache so next read fetch fresh data
             }
-
+            // returns whether the update was successful
             return updated;
 
         } catch (SQLException e) {
@@ -190,42 +202,6 @@ public class ProductDAO implements ProductDaoInterface {
         return false;
     }
 
-
-    /*@Override
-    public boolean updateProduct(Product product) {
-        String sql = "UPDATE Products SET name = ?, description = ?, price = ?, category_id = ?, quantity_available = ? WHERE product_id = ?";
-        log.debug("Preparing to update product: {}", product);
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, product.getProductName());
-            pstmt.setString(2, product.getDescription());
-            pstmt.setBigDecimal(3, product.getPrice());
-            pstmt.setInt(4, product.getCategoryId());
-            pstmt.setInt(5, product.getQuantityAvailable());
-            pstmt.setInt(6, product.getProductId());
-            log.debug("Executing SQL: {} with values [name={}, description={}, price={}, category_id={}, quantity_available={}, product_id={}]",
-                    sql,
-                    product.getProductName(),
-                    product.getDescription(),
-                    product.getPrice(),
-                    product.getCategoryId(),
-                    product.getQuantityAvailable(),
-                    product.getProductId());
-
-            boolean updated = pstmt.executeUpdate() > 0;
-            log.debug("Update result: {}", updated);
-            if (updated) {
-                log.debug("Invalidating cache after update");
-                invalidateCache();
-            }
-            return updated;
-        } catch (SQLException e) {
-            // Silent
-            log.error("Error updating product with id {}: {}", product.getProductId(), e.getMessage(), e);
-        }
-        return false;
-    }
-*/
     @Override
     public boolean deleteProduct(int id) {
         String sql = "DELETE FROM Products WHERE product_id = ?";
@@ -261,7 +237,7 @@ public class ProductDAO implements ProductDaoInterface {
                 products.add(extractProduct(rs));
             }
         } catch (SQLException e) {
-            // Silent
+            System.out.println(e.getMessage());
         }
 
         return products;

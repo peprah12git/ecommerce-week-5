@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Data Access Object for Products with in-memory caching
@@ -23,7 +23,7 @@ public class ProductDAO implements ProductDaoInterface {
         this.dataSource = dataSource;
     }
 
-    private static List<Product> productCache = null;
+    private static Map<Integer, Product> productCache = null;
     private static long cacheTimestamp = 0;
     private static final long CACHE_TTL_MS = 300000;
     private static int cacheHits = 0;
@@ -125,7 +125,7 @@ public class ProductDAO implements ProductDaoInterface {
     public List<Product> getAllProducts() {
         if (isCacheValid()) {
             cacheHits++;
-            return new ArrayList<>(productCache);
+            return new ArrayList<>(productCache.values());
         }
 
         cacheMisses++;
@@ -144,7 +144,8 @@ public class ProductDAO implements ProductDaoInterface {
                 products.add(extractProduct(rs));
             }
 
-            productCache = new ArrayList<>(products);
+            productCache = products.stream()
+                    .collect(Collectors.toMap(Product::getProductId, p -> p));
             cacheTimestamp = System.currentTimeMillis();
 
         } catch (SQLException e) {
@@ -156,6 +157,12 @@ public class ProductDAO implements ProductDaoInterface {
 
     @Override
     public Product getProductById(int id) {
+        if (isCacheValid() && productCache.containsKey(id)) {
+            cacheHits++;
+            return productCache.get(id);
+        }
+
+        cacheMisses++;
         String sql = "SELECT p.*, c.category_name, COALESCE(i.quantity_available, 0) as quantity " +
                 "FROM Products p " +
                 "LEFT JOIN Categories c ON p.category_id = c.category_id " +

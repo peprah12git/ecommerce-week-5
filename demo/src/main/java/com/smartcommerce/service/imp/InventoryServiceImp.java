@@ -1,8 +1,6 @@
 package com.smartcommerce.service.imp;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +18,14 @@ import com.smartcommerce.service.serviceInterface.InventoryServiceInterface;
 public class InventoryServiceImp implements InventoryServiceInterface {
     
     private final InventoryDaoInterface inventoryDAO;
-    private List<Inventory> inventoryCache;
+    private Map<Integer, Inventory> inventoryCache;
     private long lastCacheUpdate;
     private static final long CACHE_VALIDITY = 120000; // 2 minutes (inventory changes frequently)
 
     @Autowired
     public InventoryServiceImp(InventoryDaoInterface inventoryDAO) {
         this.inventoryDAO = inventoryDAO;
-        this.inventoryCache = new ArrayList<>();
+        this.inventoryCache = new HashMap<>();
         this.lastCacheUpdate = 0;
     }
 
@@ -42,6 +40,12 @@ public class InventoryServiceImp implements InventoryServiceInterface {
 
     @Override
     public Inventory getInventoryByProductId(int productId) {
+        if (!inventoryCache.isEmpty() && inventoryCache.containsKey(productId)) {
+            long now = System.currentTimeMillis();
+            if ((now - lastCacheUpdate) < CACHE_VALIDITY) {
+                return inventoryCache.get(productId);
+            }
+        }
         return inventoryDAO.getInventoryByProductId(productId);
     }
 
@@ -51,13 +55,15 @@ public class InventoryServiceImp implements InventoryServiceInterface {
 
         if (!inventoryCache.isEmpty() && (now - lastCacheUpdate) < CACHE_VALIDITY) {
             System.out.println("✓ Inventory from cache");
-            return new ArrayList<>(inventoryCache);
+            return new ArrayList<>(inventoryCache.values());
         }
 
         System.out.println("✗ Fetching inventory from database");
-        inventoryCache = inventoryDAO.getAllInventory();
+        List<Inventory> items = inventoryDAO.getAllInventory();
+        inventoryCache = items.stream()
+                .collect(Collectors.toMap(Inventory::getProductId, i -> i));
         lastCacheUpdate = now;
-        return new ArrayList<>(inventoryCache);
+        return new ArrayList<>(inventoryCache.values());
     }
 
     @Override

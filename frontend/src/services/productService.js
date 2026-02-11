@@ -1,13 +1,13 @@
 import api from './api';
+import graphqlService from './graphqlService';
 
 const ProductService = {
-  // Get all products without pagination
+  // Get all products without pagination - USE GRAPHQL
   getAllProducts: async () => {
-    const response = await api.get('/products/all');
-    return response.data;
+    return await graphqlService.getAllProducts();
   },
 
-  // Get products with pagination and filtering
+  // Get products with pagination and filtering - USE GRAPHQL for simple queries
   getProducts: async (params = {}) => {
     const {
       page = 0,
@@ -21,6 +21,12 @@ const ProductService = {
       inStock,
     } = params;
 
+    // Use GraphQL for simple filtering (no pagination/sorting)
+    if (!page && !size && !sortBy && !inStock) {
+      return await graphqlService.getProducts({ category, minPrice, maxPrice, searchTerm });
+    }
+
+    // Use REST for complex queries with pagination
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -38,10 +44,9 @@ const ProductService = {
     return response.data;
   },
 
-  // Get single product by ID
+  // Get single product by ID - USE GRAPHQL
   getProductById: async (id) => {
-    const response = await api.get(`/products/${id}`);
-    return response.data;
+    return await graphqlService.getProductById(id);
   },
 
   // Get products by category

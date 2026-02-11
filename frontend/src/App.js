@@ -30,6 +30,7 @@ import CategoriesAdmin from './pages/admin/Categories/CategoriesAdmin';
 import CategoryForm from './pages/admin/Categories/CategoryForm';
 import OrdersAdmin from './pages/admin/Orders/OrdersAdmin';
 import InventoryAdmin from './pages/admin/Inventory/InventoryAdmin';
+import PerformanceReport from './pages/admin/Performance/PerformanceReport';
 
 // Client Layout wrapper
 const ClientLayout = () => (
@@ -72,6 +73,7 @@ function App() {
             <Route path="categories/new" element={<CategoryForm />} />
             <Route path="orders" element={<OrdersAdmin />} />
             <Route path="inventory" element={<InventoryAdmin />} />
+            <Route path="performance" element={<PerformanceReport />} />
           </Route>
         </Routes>
       </Router>

@@ -12,6 +12,7 @@ import {
   ClipboardList,
   Warehouse,
   LogOut,
+  Activity,
 } from 'lucide-react';
 import './AdminLayout.css';
 
@@ -47,6 +48,7 @@ const AdminLayout = () => {
     { path: '/admin/categories', icon: Tag, label: 'Categories' },
     { path: '/admin/orders', icon: ClipboardList, label: 'Orders' },
     { path: '/admin/inventory', icon: Warehouse, label: 'Inventory' },
+    { path: '/admin/performance', icon: Activity, label: 'Performance' },
   ];
 
   const isActive = (path, exact = false) => {

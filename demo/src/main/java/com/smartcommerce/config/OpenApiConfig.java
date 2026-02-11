@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  * OpenAPI JSON spec at:    /api/v3/api-docs
  */
 @Configuration
-@OpenAPIDefinition(
+@OpenAPIDefinition( // defines global API metadata
         info = @Info(
                 title = "SmartCommerce API",
                 version = "1.0.0",

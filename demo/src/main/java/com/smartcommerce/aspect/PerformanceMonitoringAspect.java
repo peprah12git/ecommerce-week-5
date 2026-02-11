@@ -39,6 +39,13 @@ public class PerformanceMonitoringAspect {
     }
 
     /**
+     * Pointcut for all GraphQL controller methods
+     */
+    @Pointcut("execution(* com.smartcommerce.controller.graphiqlController..*.*(..))")
+    public void graphqlControllerPointcut() {
+    }
+
+    /**
      * Monitor service layer methods execution time
      */
     @Around("serviceLayerPointcut()")
@@ -52,6 +59,14 @@ public class PerformanceMonitoringAspect {
     @Around("daoLayerPointcut()")
     public Object monitorDaoPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
         return monitorPerformance(joinPoint, "💾 DATABASE");
+    }
+
+    /**
+     * Monitor GraphQL controller execution time
+     */
+    @Around("graphqlControllerPointcut()")
+    public Object monitorGraphQLPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
+        return monitorPerformance(joinPoint, "🔷 GRAPHQL");
     }
 
     /**

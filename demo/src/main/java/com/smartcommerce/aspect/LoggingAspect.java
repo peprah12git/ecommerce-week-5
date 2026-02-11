@@ -36,6 +36,13 @@ public class LoggingAspect {
     }
 
     /**
+     * Pointcut for all GraphQL controller methods
+     */
+    @Pointcut("execution(* com.smartcommerce.controller.graphiqlController..*.*(..))")
+    public void graphqlControllerPointcut() {
+    }
+
+    /**
      * Log service method entry with parameters
      */
     @Before("serviceLayerPointcut()")
@@ -67,7 +74,7 @@ public class LoggingAspect {
     /**
      * Log REST API controller invocations
      */
-    @Before("controllerLayerPointcut()")
+    @Before("controllerLayerPointcut() && !graphqlControllerPointcut()")
     public void logControllerMethodEntry(JoinPoint joinPoint) {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
@@ -82,12 +89,40 @@ public class LoggingAspect {
     /**
      * Log REST API controller completion
      */
-    @AfterReturning(pointcut = "controllerLayerPointcut()", returning = "result")
+    @AfterReturning(pointcut = "controllerLayerPointcut() && !graphqlControllerPointcut()", returning = "result")
     public void logControllerMethodExit(JoinPoint joinPoint, Object result) {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
         
         logger.info("✅ [REST API] Response: {}.{}() completed successfully",
+                getSimpleClassName(className),
+                methodName);
+    }
+
+    /**
+     * Log GraphQL controller invocations
+     */
+    @Before("graphqlControllerPointcut()")
+    public void logGraphQLMethodEntry(JoinPoint joinPoint) {
+        String className = joinPoint.getSignature().getDeclaringTypeName();
+        String methodName = joinPoint.getSignature().getName();
+        Object[] args = joinPoint.getArgs();
+        
+        logger.info("⏩ [GRAPHQL] Query/Mutation: {}.{}() with arguments: {}",
+                getSimpleClassName(className),
+                methodName,
+                formatArguments(args));
+    }
+
+    /**
+     * Log GraphQL controller completion
+     */
+    @AfterReturning(pointcut = "graphqlControllerPointcut()", returning = "result")
+    public void logGraphQLMethodExit(JoinPoint joinPoint, Object result) {
+        String className = joinPoint.getSignature().getDeclaringTypeName();
+        String methodName = joinPoint.getSignature().getName();
+        
+        logger.info("✅ [GRAPHQL] Response: {}.{}() completed successfully",
                 getSimpleClassName(className),
                 methodName);
     }

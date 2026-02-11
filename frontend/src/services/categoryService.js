@@ -1,16 +1,15 @@
 import api from './api';
+import graphqlService from './graphqlService';
 
 const CategoryService = {
-  // Get all categories
+  // Get all categories - USE GRAPHQL
   getAllCategories: async () => {
-    const response = await api.get('/categories');
-    return response.data;
+    return await graphqlService.getAllCategories();
   },
 
-  // Get category by ID
+  // Get category by ID - USE GRAPHQL
   getCategoryById: async (id) => {
-    const response = await api.get(`/categories/${id}`);
-    return response.data;
+    return await graphqlService.getCategoryById(id);
   },
 
   // Get category by name

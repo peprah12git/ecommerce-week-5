@@ -40,13 +40,20 @@ const Products = () => {
         inStock: filters.inStock === 'true' ? true : filters.inStock === 'false' ? false : undefined,
       };
 
-      console.log('Fetching products with params:', params);
       const response = await ProductService.getProducts(params);
-      console.log('API Response:', response);
-      console.log('Products content:', response.content);
-      setProducts(response.content || []);
-      setTotalPages(response.totalPages || 0);
-      setTotalElements(response.totalElements || 0);
+      
+      // Handle both GraphQL (array) and REST (paginated object) responses
+      if (Array.isArray(response)) {
+        // GraphQL response - simple array
+        setProducts(response);
+        setTotalPages(1);
+        setTotalElements(response.length);
+      } else {
+        // REST response - paginated object
+        setProducts(response.content || []);
+        setTotalPages(response.totalPages || 0);
+        setTotalElements(response.totalElements || 0);
+      }
     } catch (error) {
       console.error('Failed to fetch products:', error);
     } finally {

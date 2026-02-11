@@ -19,6 +19,10 @@ import java.util.List;
 public class ProductDAO implements ProductDaoInterface {
     private DataSource dataSource;
 
+    public ProductDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     private static List<Product> productCache = null;
     private static long cacheTimestamp = 0;
     private static final long CACHE_TTL_MS = 300000;

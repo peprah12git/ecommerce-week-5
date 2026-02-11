@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext';
 
 // Components
 import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
 
 // Unified Login
 import UnifiedLogin from './pages/UnifiedLogin/UnifiedLogin';
@@ -17,6 +18,7 @@ import Register from './pages/client/Register/Register';
 import Cart from './pages/client/Cart/Cart';
 import Orders from './pages/client/Orders/Orders';
 import OrderDetail from './pages/client/Orders/OrderDetail';
+import Profile from './pages/client/Profile/Profile';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout/AdminLayout';
@@ -28,12 +30,14 @@ import CategoriesAdmin from './pages/admin/Categories/CategoriesAdmin';
 import CategoryForm from './pages/admin/Categories/CategoryForm';
 import OrdersAdmin from './pages/admin/Orders/OrdersAdmin';
 import InventoryAdmin from './pages/admin/Inventory/InventoryAdmin';
+import PerformanceReport from './pages/admin/Performance/PerformanceReport';
 
 // Client Layout wrapper
 const ClientLayout = () => (
   <>
     <Header />
     <Outlet />
+    <Footer />
   </>
 );
 
@@ -56,6 +60,7 @@ function App() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:orderId" element={<OrderDetail />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
 
           {/* Admin Routes */}
@@ -68,6 +73,7 @@ function App() {
             <Route path="categories/new" element={<CategoryForm />} />
             <Route path="orders" element={<OrdersAdmin />} />
             <Route path="inventory" element={<InventoryAdmin />} />
+            <Route path="performance" element={<PerformanceReport />} />
           </Route>
         </Routes>
       </Router>

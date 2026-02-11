@@ -62,13 +62,13 @@ const Header = () => {
   return (
     <header className="header">
       <div className="container header-container">
-        <Link to="/" className="logo">
+        <Link to="/home" className="logo">
           <ShoppingBag size={28} />
           <span>SmartCommerce</span>
         </Link>
 
         <nav className="nav-links">
-          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+          <Link to="/home" className={location.pathname === '/home' ? 'active' : ''}>
             Home
           </Link>
           <Link to="/products" className={location.pathname.startsWith('/products') ? 'active' : ''}>
@@ -100,6 +100,9 @@ const Header = () => {
                     <span>{user.email}</span>
                   </div>
                   <hr />
+                  <Link to="/profile" onClick={() => setShowUserMenu(false)}>
+                    My Profile
+                  </Link>
                   <Link to="/orders" onClick={() => setShowUserMenu(false)}>
                     My Orders
                   </Link>

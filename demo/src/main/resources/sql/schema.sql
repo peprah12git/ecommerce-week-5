@@ -99,7 +99,7 @@ CREATE INDEX idx_reviews_user ON Reviews(user_id);
 -- Insert Sample Users with plaintext passwords
 -- Password: "password123"
 INSERT INTO Users (name, email, password, phone, address, role) VALUES
-('Admin User', 'admin@example.com', 'password123', '555-0001', '123 Admin St', 'admin'),
+('Admin User', 'admin@test.com', 'password123', '555-0001', '123 Admin St', 'admin'),
 ('John Doe', 'john.doe@email.com', 'password123', '555-1001', '123 Main St, City A', 'user'),
 ('Jane Smith', 'jane.smith@email.com', 'password123', '555-1002', '456 Oak Ave, City B', 'user'),
 ('Bob Johnson', 'bob.j@email.com', 'password123', '555-1003', '789 Pine Rd, City C', 'user'),

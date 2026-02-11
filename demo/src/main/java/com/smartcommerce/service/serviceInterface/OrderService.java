@@ -87,4 +87,15 @@ public interface OrderService {
      * @throws ResourceNotFoundException if order not found
      */
     List<OrderItem> getOrderItems(int orderId);
+
+    /**
+     * Creates an order from user's cart
+     * Validates stock, calculates total, creates order and items, deducts inventory, clears cart
+     *
+     * @param userId User ID
+     * @return Created order
+     * @throws ResourceNotFoundException if user not found or cart is empty
+     * @throws BusinessException if insufficient stock or order creation fails
+     */
+    Order checkoutFromCart(int userId);
 }

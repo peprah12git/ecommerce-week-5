@@ -10,15 +10,14 @@ import './ProductDetail.css';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { showNotification } = useApp();
+  const { showNotification, user } = useApp();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
 
-  // For demo purposes, using a fixed user ID. In production, get from auth context
-  const userId = 1;
+  const userId = user?.userId || user?.user_id;
 
   useEffect(() => {
     fetchProduct();
@@ -43,6 +42,11 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = async () => {
+    if (!user) {
+      showNotification('Please sign in to add items to cart', 'error');
+      navigate('/login');
+      return;
+    }
     setAddingToCart(true);
     try {
       await CartService.addToCart(userId, product.productId, quantity);

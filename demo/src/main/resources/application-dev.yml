@@ -13,6 +13,10 @@ spring:
       max-lifetime: 1800000
       idle-timeout: 600000
 
+  graphql:
+    http:
+      path: /graphql
+
 logging:
   level:
     com.zaxxer.hikari: DEBUG  # Shows connection pool activity

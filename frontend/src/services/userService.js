@@ -6,6 +6,12 @@ const UserService = {
     const response = await api.post('/users', userData);
     return response.data;
   },
+
+  // Login user
+  login: async (email, password) => {
+    const response = await api.post('/users/login', { email, password });
+    return response.data;
+  },
 };
 
 export default UserService;

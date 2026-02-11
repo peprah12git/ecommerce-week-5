@@ -1,16 +1,15 @@
-package com.smartcommerce.controller;
+package com.smartcommerce.controller.graphiqlController;
 
-import java.math.BigDecimal;
-import java.util.List;
-
+import com.smartcommerce.dtos.request.ProductFilterDTO;
+import com.smartcommerce.model.Product;
+import com.smartcommerce.service.serviceInterface.ProductService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
-import com.smartcommerce.dtos.request.ProductFilterDTO;
-import com.smartcommerce.model.Product;
-import com.smartcommerce.service.serviceInterface.ProductService;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * GraphQL Controller for Product operations
@@ -51,25 +50,25 @@ public class ProductGraphQLController {
             @Argument String searchTerm) {
 
         // If pagination parameters provided, use filtered query
-        if (pageNumber != null || pageSize != null || category != null || 
-            minPrice != null || maxPrice != null || searchTerm != null) {
-            
+        if (pageNumber != null || pageSize != null || category != null ||
+                minPrice != null || maxPrice != null || searchTerm != null) {
+
             int page = pageNumber != null ? pageNumber : 0;
             int size = pageSize != null ? pageSize : 10;
-            
+
             ProductFilterDTO filters = new ProductFilterDTO(
-                category,
-                minPrice != null ? BigDecimal.valueOf(minPrice) : null,
-                maxPrice != null ? BigDecimal.valueOf(maxPrice) : null,
-                searchTerm,
-                null  // inStock filter
+                    category,
+                    minPrice != null ? BigDecimal.valueOf(minPrice) : null,
+                    maxPrice != null ? BigDecimal.valueOf(maxPrice) : null,
+                    searchTerm,
+                    null  // inStock filter
             );
-            
+
             return productService.getProductsWithPaginationAndFilters(
-                page, size, "productId", "ASC", filters
+                    page, size, "productId", "ASC", filters
             );
         }
-        
+
         // Return all products if no filters
         return productService.getAllProducts();
     }
@@ -98,10 +97,10 @@ public class ProductGraphQLController {
             @Argument Integer quantityAvailable) {
 
         Product product = new Product(
-            productName,
-            description,
-            BigDecimal.valueOf(price),
-            categoryId
+                productName,
+                description,
+                BigDecimal.valueOf(price),
+                categoryId
         );
 
         if (quantityAvailable != null) {
@@ -124,7 +123,7 @@ public class ProductGraphQLController {
             @Argument Integer categoryId) {
 
         Product existingProduct = productService.getProductById(id);
-        
+
         if (productName != null) {
             existingProduct.setProductName(productName);
         }

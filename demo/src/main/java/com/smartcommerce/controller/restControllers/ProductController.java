@@ -1,20 +1,4 @@
-package com.smartcommerce.controller;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+package com.smartcommerce.controller.restControllers;
 
 import com.smartcommerce.dtos.request.CreateProductDTO;
 import com.smartcommerce.dtos.request.ProductFilterDTO;
@@ -28,7 +12,6 @@ import com.smartcommerce.model.Product;
 import com.smartcommerce.service.serviceInterface.ProductService;
 import com.smartcommerce.utils.ProductMapper;
 import com.smartcommerce.validation.ValidSortDirection;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,6 +20,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * REST Controller for Product management
@@ -49,15 +38,20 @@ import jakarta.validation.Valid;
 public class ProductController {
 
     private final ProductService productService;
+
     // Manual constructor for compatibility
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
+
     /**
      * Create a new product
      * POST /api/products
      */
+    // Swagger /OpenAPI annotations
+    //@Operation: gives human readeble description of what the api does
     @Operation(summary = "Create a new product", description = "Creates a new product with the provided details and optional initial stock quantity")
+    // tells swagger what possible HTTP response the endpoint can return
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Product created successfully",
                     content = @Content(schema = @Schema(implementation = ProductResponse.class))),
@@ -65,11 +59,12 @@ public class ProductController {
                     content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Category not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+
     })
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(
             @Valid @RequestBody CreateProductDTO createProductDTO) {
-
+// ---creating a new product entity from the incomming DTp
         Product product = new Product(
                 createProductDTO.productName(),
                 createProductDTO.description(),
@@ -80,10 +75,10 @@ public class ProductController {
         if (createProductDTO.quantityAvailable() != null) {
             product.setQuantityAvailable(createProductDTO.quantityAvailable());
         }
-
+//----- Map the saved Product entity to a response DTO This ensures we only send the necessary fields back to the client
         Product createdProduct = productService.createProduct(product);
         ProductResponse response = ProductMapper.toProductResponse(createdProduct);
-
+//-----return HTTP with product data
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
@@ -119,7 +114,7 @@ public class ProductController {
      * @param inStock       Filter by stock status (true=in stock, false=out of stock)
      */
     @Operation(summary = "Get products with pagination and filtering",
-               description = "Retrieves products with support for pagination, sorting, and multiple filter criteria")
+            description = "Retrieves products with support for pagination, sorting, and multiple filter criteria")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Paginated product list retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request parameters",
@@ -186,7 +181,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    // Note: The path variable is named "id" to match the method parameter, but it can be changed to "productId" if desired
+    
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(
             @Parameter(description = "Product ID", required = true, example = "1")
@@ -202,7 +197,7 @@ public class ProductController {
      */
     @Operation(summary = "Get products by category", description = "Retrieves all products belonging to a specific category")
     @ApiResponse(responseCode = "200", description = "Products retrieved successfully")
-        @GetMapping("/category/{categoryName}")
+    @GetMapping("/category/{categoryName}")
     public ResponseEntity<List<ProductResponse>> getProductsByCategory(
             @Parameter(description = "Category name", required = true, example = "Electronics")
             @PathVariable String categoryName) {

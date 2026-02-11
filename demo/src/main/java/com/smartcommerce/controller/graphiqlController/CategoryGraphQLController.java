@@ -1,14 +1,13 @@
-package com.smartcommerce.controller;
+package com.smartcommerce.controller.graphiqlController;
 
-import java.util.List;
-
+import com.smartcommerce.model.Category;
+import com.smartcommerce.service.imp.CategoryService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
-import com.smartcommerce.model.Category;
-import com.smartcommerce.service.imp.CategoryService;
+import java.util.List;
 
 /**
  * GraphQL Controller for Category operations
@@ -70,7 +69,7 @@ public class CategoryGraphQLController {
             @Argument String description) {
 
         Category existingCategory = categoryService.getCategoryById(id);
-        
+
         if (categoryName != null) {
             existingCategory.setCategoryName(categoryName);
         }

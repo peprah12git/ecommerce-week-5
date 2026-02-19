@@ -9,7 +9,7 @@ const InventoryService = {
 
   // Get inventory for a specific product
   getInventoryByProductId: async (productId) => {
-    const response = await api.get(`/inventory/product/${productId}`);
+    const response = await api.get(`/inventory/${productId}`);
     return response.data;
   },
 
@@ -27,25 +27,25 @@ const InventoryService = {
 
   // Update inventory quantity
   updateInventory: async (productId, quantity) => {
-    const response = await api.put(`/inventory/product/${productId}`, { quantity });
+    const response = await api.put(`/inventory/${productId}`, { quantity });
     return response.data;
   },
 
   // Add stock
   addStock: async (productId, quantity) => {
-    const response = await api.post(`/inventory/product/${productId}/add`, { quantity });
+    const response = await api.post(`/inventory/${productId}/add-stock`, { quantity });
     return response.data;
   },
 
   // Reduce stock
   reduceStock: async (productId, quantity) => {
-    const response = await api.post(`/inventory/product/${productId}/reduce`, { quantity });
+    const response = await api.post(`/inventory/${productId}/reduce-stock`, { quantity });
     return response.data;
   },
 
   // Check if product is in stock
   checkStock: async (productId) => {
-    const response = await api.get(`/inventory/product/${productId}/check`);
+    const response = await api.get(`/inventory/${productId}/check`);
     return response.data;
   },
 };

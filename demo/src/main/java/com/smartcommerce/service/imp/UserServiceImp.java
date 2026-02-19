@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Service layer for User entity
@@ -27,6 +26,7 @@ import java.util.UUID;
 public class UserServiceImp implements UserService {
 
     private UserDaoInterface userDao;
+    private com.smartcommerce.security.JwtUtil jwtUtil;
 
     /**
      * Creates a new user
@@ -292,10 +292,11 @@ public class UserServiceImp implements UserService {
 
 
     /**
-     * Generates a simple authentication token
-     * In production, use proper JWT implementation
+     * Generates a JWT token for the authenticated user
      */
     private String generateToken(User user) {
-        return UUID.randomUUID().toString() + "-" + user.getUserId();
+        // Use JwtUtil to create a token containing user id and role
+        return jwtUtil.generateToken(user);
     }
 }
+

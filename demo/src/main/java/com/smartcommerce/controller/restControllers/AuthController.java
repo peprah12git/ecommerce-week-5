@@ -1,6 +1,8 @@
 package com.smartcommerce.controller.restControllers;
 
 import com.smartcommerce.dtos.request.CreateUserDTO;
+import com.smartcommerce.dtos.request.LoginDTO;
+import com.smartcommerce.dtos.response.LoginResponse;
 import com.smartcommerce.dtos.response.UserResponse;
 import com.smartcommerce.exception.ErrorResponse;
 import com.smartcommerce.exception.ValidationErrorResponse;
@@ -21,17 +23,35 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// REST Controller for User management
+/**
+ * Authentication controller exposing login and register endpoints
+ */
 @RestController
-@RequestMapping("/api/users")
-@Tag(name = "Users", description = "User management API — registration and account operations")
-public class UserController {
+@RequestMapping("/api/auth")
+@Tag(name = "Auth", description = "Authentication endpoints: login and register")
+public class AuthController {
 
     private final UserService userService;
 
-    // Manual constructor for compatibility
-    public UserController(UserService userService) {
+    public AuthController(UserService userService) {
         this.userService = userService;
+    }
+
+    @Operation(summary = "User login", description = "Authenticates a user with email and password")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login successful",
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginDTO loginDTO) {
+        LoginResponse response = userService.login(loginDTO.email(), loginDTO.password());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Register a new user", description = "Creates a new user account with the provided details")
@@ -43,11 +63,8 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "Email already exists",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    // Endpoint to register a new user
-    @PostMapping
-    public ResponseEntity<UserResponse> addUser(
-            @Valid @RequestBody CreateUserDTO createUserDTO
-    ) {
+    @PostMapping("/register")
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody CreateUserDTO createUserDTO) {
         User userToCreate = new User(
                 createUserDTO.name(),
                 createUserDTO.email(),
@@ -55,11 +72,9 @@ public class UserController {
                 createUserDTO.phone(),
                 createUserDTO.address()
         );
-        User user = userService.createUser(userToCreate);
-        UserResponse response = UserMapper.toUserResponse(user);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        User created = userService.createUser(userToCreate);
+        UserResponse response = UserMapper.toUserResponse(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
 }
+

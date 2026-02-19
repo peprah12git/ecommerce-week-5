@@ -185,13 +185,15 @@ public class ProductDAO implements ProductDaoInterface {
 
     @Override
     public boolean updateProduct(Product product) {
-        String sql = "UPDATE Inventory SET quantity_available = ?, last_updated = CURRENT_TIMESTAMP WHERE product_id = ?";
+        String sql = "UPDATE Products SET name = ?, description = ?, price = ? WHERE product_id = ?";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
-            pstmt.setInt(1, product.getQuantityAvailable());
-            pstmt.setInt(2, product.getProductId());
+            pstmt.setString(1, product.getProductName());
+            pstmt.setString(2, product.getDescription());
+            pstmt.setBigDecimal(3, product.getPrice());
+            pstmt.setInt(4, product.getProductId());
 
             boolean updated = pstmt.executeUpdate() > 0;
             if (updated) {

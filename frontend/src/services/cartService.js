@@ -22,7 +22,6 @@ const CartService = {
   // Add item to cart
   addToCart: async (userId, productId, quantity) => {
     const response = await api.post('/cart/items', {
-      userId,
       productId,
       quantity,
     });

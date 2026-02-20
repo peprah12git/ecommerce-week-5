@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Service layer for User entity
@@ -27,6 +26,7 @@ import java.util.UUID;
 public class UserServiceImp implements UserService {
 
     private UserDaoInterface userDao;
+    private com.smartcommerce.security.JwtUtil jwtUtil;
 
     /**
      * Creates a new user
@@ -237,65 +237,41 @@ public class UserServiceImp implements UserService {
 
     /**
      * Authenticates a user with email and password
+     * Generates JWT token with user role for RBAC
      *
      * @param email    User's email
      * @param password User's password
-     * @return LoginResponse with token and user info
+     * @return LoginResponse with JWT token and user info
      * @throws ResourceNotFoundException if user not found
      * @throws BusinessException         if credentials are invalid
      */
     @Override
-    @Transactional  // Removed readOnly to allow password updates during migration
     public LoginResponse login(String email, String password) {
-
+        // Validate inputs
         if (email == null || email.trim().isEmpty()) {
             throw new BusinessException("Email is required");
         }
-
         if (password == null || password.trim().isEmpty()) {
             throw new BusinessException("Password is required");
         }
 
+        // Find user by email
         User user = userDao.getUserByEmail(email.trim().toLowerCase());
         if (user == null) {
             throw new ResourceNotFoundException("User", "email", email);
         }
 
-        // Check if password is already BCrypt hashed (starts with $2a$, $2b$, or $2y$)
-        boolean isPasswordHashed = user.getPassword().startsWith("$2");
-
-        if (isPasswordHashed) {
-            // Try BCrypt verification for hashed passwords
-            BCrypt.Result result = BCrypt.verifyer()
-                    .verify(password.toCharArray(), user.getPassword());
-
-            if (!result.verified) {
-                throw new BusinessException("Invalid credentials");
-            }
-        } else {
-            // Fallback for plain text passwords (existing users)
-            if (!password.equals(user.getPassword())) {
-                throw new BusinessException("Invalid credentials");
-            }
-
-            // Migrate plain text password to BCrypt hash for future security
-            String hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray());
-            user.setPassword(hashedPassword);
-            userDao.updateUser(user);  // Update the password in database
+        // Verify password with BCrypt
+        BCrypt.Result result = BCrypt.verifyer()
+                .verify(password.toCharArray(), user.getPassword());
+        if (!result.verified) {
+            throw new BusinessException("Invalid credentials");
         }
 
-        String token = generateToken(user);
+        // Generate JWT token with user role
+        String token = jwtUtil.generateToken(user);
         UserResponse userResponse = UserMapper.toUserResponse(user);
 
         return new LoginResponse(token, userResponse);
-    }
-
-
-    /**
-     * Generates a simple authentication token
-     * In production, use proper JWT implementation
-     */
-    private String generateToken(User user) {
-        return UUID.randomUUID().toString() + "-" + user.getUserId();
     }
 }

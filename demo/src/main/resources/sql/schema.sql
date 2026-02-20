@@ -178,3 +178,9 @@ INSERT INTO Reviews (user_id, product_id, rating, comment) VALUES
 
 SHOW TABLES;
 SELECT 'Sample data inserted successfully!' AS Status;
+
+-- Update existing admin user role to uppercase
+UPDATE Users SET role = 'ADMIN' WHERE email = 'admin@test.com';
+
+-- Verify the update
+SELECT user_id, name, email, role FROM Users WHERE email = 'admin@test.com';

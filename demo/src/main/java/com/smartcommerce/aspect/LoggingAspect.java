@@ -50,8 +50,8 @@ public class LoggingAspect {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
-        
-        logger.debug("⏩ [SERVICE] Entering: {}.{}() with arguments: {}",
+
+        logger.debug(" [SERVICE] Entering: {}.{}() with arguments: {}",
                 getSimpleClassName(className),
                 methodName,
                 formatArguments(args));
@@ -64,8 +64,8 @@ public class LoggingAspect {
     public void logServiceMethodExit(JoinPoint joinPoint, Object result) {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
-        
-        logger.debug("✅ [SERVICE] Completed: {}.{}() with result: {}",
+
+        logger.debug(" [SERVICE] Completed: {}.{}() with result: {}",
                 getSimpleClassName(className),
                 methodName,
                 formatResult(result));
@@ -79,8 +79,8 @@ public class LoggingAspect {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
-        
-        logger.info("⏩ [REST API] Request: {}.{}() with parameters: {}",
+
+        logger.info(" [REST API] Request: {}.{}() with parameters: {}",
                 getSimpleClassName(className),
                 methodName,
                 formatArguments(args));
@@ -93,8 +93,8 @@ public class LoggingAspect {
     public void logControllerMethodExit(JoinPoint joinPoint, Object result) {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
-        
-        logger.info("✅ [REST API] Response: {}.{}() completed successfully",
+
+        logger.info(" [REST API] Response: {}.{}() completed successfully",
                 getSimpleClassName(className),
                 methodName);
     }
@@ -107,8 +107,8 @@ public class LoggingAspect {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
-        
-        logger.info("⏩ [GRAPHQL] Query/Mutation: {}.{}() with arguments: {}",
+
+        logger.info(" [GRAPHQL] Query/Mutation: {}.{}() with arguments: {}",
                 getSimpleClassName(className),
                 methodName,
                 formatArguments(args));
@@ -121,8 +121,8 @@ public class LoggingAspect {
     public void logGraphQLMethodExit(JoinPoint joinPoint, Object result) {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
-        
-        logger.info("✅ [GRAPHQL] Response: {}.{}() completed successfully",
+
+        logger.info(" [GRAPHQL] Response: {}.{}() completed successfully",
                 getSimpleClassName(className),
                 methodName);
     }

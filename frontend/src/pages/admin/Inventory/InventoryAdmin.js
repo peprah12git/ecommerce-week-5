@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Warehouse, AlertTriangle, Package, RefreshCw, Plus, Minus } from 'lucide-react';
 import ProductService from '../../../services/productService';
+import InventoryService from '../../../services/inventoryService';
 import Modal from '../../../components/Modal/Modal';
 import Loading from '../../../components/Loading/Loading';
 import { useApp } from '../../../context/AppContext';
@@ -13,6 +14,7 @@ const InventoryAdmin = () => {
   const [updateModal, setUpdateModal] = useState({ open: false, product: null });
   const [quantity, setQuantity] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [updateMode, setUpdateMode] = useState('set'); // 'set' or 'add'
   const { showNotification } = useApp();
 
   const LOW_STOCK_THRESHOLD = 10;
@@ -39,13 +41,21 @@ const InventoryAdmin = () => {
 
     setUpdating(true);
     try {
-      await ProductService.updateProductQuantity(
-        updateModal.product.productId,
-        parseInt(quantity)
-      );
+      if (updateMode === 'add') {
+        await InventoryService.addStock(
+          updateModal.product.productId,
+          parseInt(quantity)
+        );
+      } else {
+        await ProductService.updateProductQuantity(
+          updateModal.product.productId,
+          parseInt(quantity)
+        );
+      }
       showNotification('Inventory updated successfully', 'success');
       setUpdateModal({ open: false, product: null });
       setQuantity('');
+      setUpdateMode('set');
       fetchProducts();
     } catch (error) {
       showNotification(error.response?.data?.message || 'Failed to update inventory', 'error');
@@ -56,7 +66,8 @@ const InventoryAdmin = () => {
 
   const openUpdateModal = (product) => {
     setUpdateModal({ open: true, product });
-    setQuantity(product.quantityAvailable?.toString() || '0');
+    setQuantity('');
+    setUpdateMode('set');
   };
 
   const getFilteredProducts = () => {
@@ -236,6 +247,7 @@ const InventoryAdmin = () => {
         onClose={() => {
           setUpdateModal({ open: false, product: null });
           setQuantity('');
+          setUpdateMode('set');
         }}
         title="Update Stock"
       >
@@ -244,6 +256,29 @@ const InventoryAdmin = () => {
             <div className="product-header">
               <h4>{updateModal.product.productName}</h4>
               <p>Current stock: {updateModal.product.quantityAvailable || 0}</p>
+            </div>
+
+            <div className="mode-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+              <button
+                className={`btn ${updateMode === 'set' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => {
+                  setUpdateMode('set');
+                  setQuantity('');
+                }}
+                disabled={updating}
+              >
+                Set Quantity
+              </button>
+              <button
+                className={`btn ${updateMode === 'add' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => {
+                  setUpdateMode('add');
+                  setQuantity('');
+                }}
+                disabled={updating}
+              >
+                Add Stock
+              </button>
             </div>
 
             <div className="quantity-input-group">
@@ -261,6 +296,7 @@ const InventoryAdmin = () => {
                 min="0"
                 className="quantity-input"
                 disabled={updating}
+                placeholder={updateMode === 'set' ? 'Enter new quantity' : 'Enter quantity to add'}
               />
               <button
                 className="qty-btn"
@@ -277,6 +313,7 @@ const InventoryAdmin = () => {
                 onClick={() => {
                   setUpdateModal({ open: false, product: null });
                   setQuantity('');
+                  setUpdateMode('set');
                 }}
                 disabled={updating}
               >

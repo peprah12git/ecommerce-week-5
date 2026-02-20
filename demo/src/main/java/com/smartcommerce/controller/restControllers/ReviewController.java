@@ -25,7 +25,10 @@ public class ReviewController {
 
     @Operation(summary = "Create a new review")
     @PostMapping
-    public ResponseEntity<Review> createReview(@RequestBody Review review) {
+    public ResponseEntity<Review> createReview(
+            @RequestBody Review review,
+            @RequestAttribute("userId") Integer userId) {
+        review.setUserId(userId);
         Review created = reviewService.createReview(review);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -46,8 +49,9 @@ public class ReviewController {
 
     @Operation(summary = "Get all reviews by a user")
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Review>> getReviewsByUserId(@PathVariable int userId) {
-        List<Review> reviews = reviewService.getReviewsByUserId(userId);
+    public ResponseEntity<List<Review>> getReviewsByUserId(
+            @RequestAttribute("userId") Integer authenticatedUserId) {
+        List<Review> reviews = reviewService.getReviewsByUserId(authenticatedUserId);
         return ResponseEntity.ok(reviews);
     }
 

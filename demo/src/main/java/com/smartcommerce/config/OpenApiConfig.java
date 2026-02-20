@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
                 )
         ),
         servers = {
-                @Server(url = "http://localhost:8082", description = "Local Development Server")
+                @Server(url = "http://localhost:8080", description = "Local Development Server")
         }
 )
 public class OpenApiConfig {

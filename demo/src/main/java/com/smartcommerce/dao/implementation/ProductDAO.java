@@ -183,31 +183,26 @@ public class ProductDAO implements ProductDaoInterface {
         return null;
     }
 
-    // -----------------------updates the inventory only-------------
     @Override
     public boolean updateProduct(Product product) {
-        String sql = "UPDATE Inventory SET quantity_available = ?, last_updated = CURRENT_TIMESTAMP WHERE product_id = ?";
-        log.debug("Preparing to update inventory for product_id={} with new quantity={}", product.getProductId(), product.getQuantityAvailable());
+        String sql = "UPDATE Products SET name = ?, description = ?, price = ? WHERE product_id = ?";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
-            pstmt.setInt(1, product.getQuantityAvailable());
-            pstmt.setInt(2, product.getProductId());
-
+            pstmt.setString(1, product.getProductName());
+            pstmt.setString(2, product.getDescription());
+            pstmt.setBigDecimal(3, product.getPrice());
+            pstmt.setInt(4, product.getProductId());
 
             boolean updated = pstmt.executeUpdate() > 0;
-            log.debug("Inventory update result for product_id {}: {}", product.getProductId(), updated);
-            // if update was successful invalidate cache
             if (updated) {
-                log.debug("Invalidating inventory cache after update for product_id={}", product.getProductId());
-                invalidateCache(); // clear cache so next read fetch fresh data
+                invalidateCache();
             }
-            // returns whether the update was successful
             return updated;
 
         } catch (SQLException e) {
-            log.error("Error updating inventory for product_id {}: {}", product.getProductId(), e.getMessage(), e);
+            // Silent
         }
 
         return false;

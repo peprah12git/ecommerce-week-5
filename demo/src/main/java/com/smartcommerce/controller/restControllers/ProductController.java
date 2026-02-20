@@ -9,6 +9,7 @@ import com.smartcommerce.dtos.response.ProductResponse;
 import com.smartcommerce.exception.ErrorResponse;
 import com.smartcommerce.exception.ValidationErrorResponse;
 import com.smartcommerce.model.Product;
+import com.smartcommerce.security.RequiredRole;
 import com.smartcommerce.service.serviceInterface.ProductService;
 import com.smartcommerce.utils.ProductMapper;
 import com.smartcommerce.validation.ValidSortDirection;
@@ -48,7 +49,7 @@ public class ProductController {
      * Create a new product
      * POST /api/products
      */
-    // Swagger /OpenAPI annotations
+    //Swagger /OpenAPI annotations
     //@Operation: gives human readeble description of what the api does
     @Operation(summary = "Create a new product", description = "Creates a new product with the provided details and optional initial stock quantity")
     // tells swagger what possible HTTP response the endpoint can return
@@ -62,6 +63,7 @@ public class ProductController {
 
     })
     @PostMapping
+    @RequiredRole("ADMIN") // Only admins can create products
     public ResponseEntity<ProductResponse> createProduct(
             @Valid @RequestBody CreateProductDTO createProductDTO) {
 // ---creating a new product entity from the incomming DTp
@@ -181,7 +183,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(
             @Parameter(description = "Product ID", required = true, example = "1")

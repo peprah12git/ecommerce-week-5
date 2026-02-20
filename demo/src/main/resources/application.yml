@@ -1,14 +1,14 @@
 #spring:
 #  application:
-#    name: smart-ecommerce-api   #Application name
+#    name: smart-ecommerce-api   # Application name
 #
-#server:
-#  port: 8080                      #Default port
+server:
+  port: 8080                     # Default port
 #  servlet:
-#    context-path: /api            #All URLs start with /api
+#    context-path: /api           # Optional, URLs start with /api
 #
 #springdoc:
 #  api-docs:
-#    path: /v3/api-docs            #OpenAPI JSON endpoint
+#    path: /v3/api-docs           # OpenAPI JSON endpoint
 #  swagger-ui:
-#    path: /swagger-ui.html        # Swagger UI location
+#    path: /swagger-ui.html       # Swagger UI location

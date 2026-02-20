@@ -1,6 +1,6 @@
 import { GraphQLClient, gql } from 'graphql-request';
 
-const GRAPHQL_URL = process.env.REACT_APP_GRAPHQL_URL || 'http://localhost:8082/graphql';
+const GRAPHQL_URL = process.env.REACT_APP_GRAPHQL_URL || 'http://localhost:8080/graphql';
 
 const client = new GraphQLClient(GRAPHQL_URL);
 

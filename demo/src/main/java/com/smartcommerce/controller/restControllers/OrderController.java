@@ -58,11 +58,12 @@ public class OrderController {
     })
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(
-            @Valid @RequestBody CreateOrderDTO createOrderDTO) {
+            @Valid @RequestBody CreateOrderDTO createOrderDTO,
+            @RequestAttribute("userId") Integer userId) {
 
         // Create Order object
         Order order = new Order();
-        order.setUserId(createOrderDTO.userId());
+        order.setUserId(userId);
         order.setStatus("pending");
 
         // Convert OrderItemDTOs to OrderItem entities
@@ -135,10 +136,9 @@ public class OrderController {
     })
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderResponse>> getOrdersByUserId(
-            @Parameter(description = "User ID", required = true, example = "1")
-            @PathVariable int userId) {
+            @RequestAttribute("userId") Integer authenticatedUserId) {
 
-        List<Order> orders = orderService.getOrdersByUserId(userId);
+        List<Order> orders = orderService.getOrdersByUserId(authenticatedUserId);
         List<OrderResponse> response = OrderMapper.toOrderResponseList(orders);
         return ResponseEntity.ok(response);
     }
@@ -246,10 +246,9 @@ public class OrderController {
     })
     @PostMapping("/checkout/{userId}")
     public ResponseEntity<OrderResponse> checkoutFromCart(
-            @Parameter(description = "User ID", required = true, example = "1")
-            @PathVariable int userId) {
+            @RequestAttribute("userId") Integer authenticatedUserId) {
 
-        Order order = orderService.checkoutFromCart(userId);
+        Order order = orderService.checkoutFromCart(authenticatedUserId);
         OrderResponse response = OrderMapper.toOrderResponse(order);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

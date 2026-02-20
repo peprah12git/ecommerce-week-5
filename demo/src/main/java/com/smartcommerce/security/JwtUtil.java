@@ -31,7 +31,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Claims validateToken(String token) {
+    public Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)
                 .build()
@@ -39,19 +39,11 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public int getUserId(String token) {
-        return Integer.parseInt(validateToken(token).getSubject());
-    }
-
-    public String getRole(String token) {
-        return validateToken(token).get("role", String.class);
-    }
-
     public String getRoleFromToken(String token) {
-        return getRole(token);
+        return getClaims(token).get("role", String.class);
     }
 
     public int getUserIdFromToken(String token) {
-        return getUserId(token);
+        return Integer.parseInt(getClaims(token).getSubject());
     }
 }

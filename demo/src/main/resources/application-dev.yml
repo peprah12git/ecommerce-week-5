@@ -24,9 +24,9 @@ spring:
 
 logging:
   level:
-    com.zaxxer.hikari: DEBUG  # Shows connection pool activity
-    com.smartcommerce: DEBUG
-    org.springframework.jdbc.core: DEBUG
+    com.zaxxer.hikari: INFO  # Shows connection pool activity
+    com.smartcommerce: INFO
+    org.springframework.jdbc.core: INFO
 #logging:
 #  level:
 #    com.ecommerce: DEBUG
